@@ -32,15 +32,16 @@ const loginUser = expressAsyncHandler(
     if (!user.password) {
       res.status(HttpStatus.BadRequest).json({
         status: "Bad Request",
-        message: "This account is registered using Google. Please log in with Google.",
+        message:
+          "This account is registered using Google. Please log in with Google.",
         statusCode: HttpStatus.BadRequest,
       });
       return;
     }
-    
+
     const checkPassword = await validatePassword(
       password,
-      user.password as string
+      user.password as string,
     );
     if (!checkPassword) {
       res.status(HttpStatus.BadRequest).json({
@@ -50,19 +51,26 @@ const loginUser = expressAsyncHandler(
       });
       return;
     }
-    try {
-      // const roles = Object.values(user.roles) as number[];
 
-      const accessToken = generateAccessToken(user._id, user.roles);
-      const refreshToken = generateRefreshToken(user._id);
-      user.refreshToken = refreshToken;
+    const accessToken = generateAccessToken(user._id, user.roles);
+    const refreshToken = generateRefreshToken(user._id);
+    user.refreshToken = refreshToken;
 
-      await user.save();
-      await setTokens(res, accessToken, refreshToken, user._id);
-    } catch (error: any) {
-      console.error(error.message);
-    }
-  }
+    await user.save();
+    await setTokens(res, refreshToken);
+
+    res.status(HttpStatus.Success).json({
+      status: "Success",
+      message: "Operation successful",
+      data: {
+        accessToken,
+        user: { userId: user._id },
+      },
+    });
+    req.log.info({
+      message: "User logged in"
+    })
+  },
 );
 
 export default loginUser;

@@ -1,7 +1,8 @@
 import jwt from "jsonwebtoken";
+import { Types } from "mongoose";
 
 export const generateAccessToken = (
-  userId: string,
+  userId: Types.ObjectId,
   roles: { Admin?: number; User?: number }
 ): string => {
   const secret = process.env.ACCESS_TOKEN_SECRET as string;

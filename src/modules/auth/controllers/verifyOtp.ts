@@ -1,15 +1,18 @@
 import { Request, Response } from "express";
 import { HttpStatus } from "../../common/enums/StatusCodes";
 import { User, validateOtpInput } from "../models/User";
-// import redisClient from "../../common/config/redisClient";
+import { redisClient } from "../../common/config/redisClient";
 import { generateAccessToken } from "../../common/utils/genAccessToken";
 import { generateRefreshToken } from "../../common/utils/genRefreshToken";
 import { setTokens } from "../../auth/utils/tokenGenerator";
 
 import { IUser } from "modules/interfaces/User";
-import NodeCache from "node-cache";
+const maxAttempts = process.env.OTP_ATTEMPTS
+  ? parseInt(process.env.OTP_ATTEMPTS, 10)
+  : 5;
+// import NodeCache from "node-cache";
 
-const cache = new NodeCache({ stdTTL: 0 });
+// const cache = new NodeCache({ stdTTL: 0 });
 
 const verifyOtp = async (
   req: Request<{}, {}, { otp: string; email: string }>,
@@ -26,31 +29,42 @@ const verifyOtp = async (
         statusCode: HttpStatus.BadRequest,
       });
     }
-    const userData = cache.get(email);
 
-    if (!userData) {
+    const pendingKey = `pending_user:${email}`;
+    const attemptsKey = `pending_user_attempts:${email}`;
+
+    const userData = await redisClient.hGetAll(pendingKey);
+
+    // Check if redis still have the user data
+    if (!userData || Object.keys(userData).length === 0) {
       return res.status(HttpStatus.BadRequest).json({
         status: "Bad request",
-        message:
-          "OTP has not been generated or assigned. Please request a new OTP.",
+        message: "OTP has expired.",
         statusCode: HttpStatus.BadRequest,
       });
     }
 
-    const user = userData as IUser;
-    const currentTime = Date.now();
+    const currentAttemptsString = await redisClient.get(attemptsKey);
 
-    if (user?.expiresAt && currentTime > user.expiresAt) {
-      user.otp = null;
-      cache.set(email, JSON.stringify(user));
+    const currentAttempts = currentAttemptsString
+      ? parseInt(currentAttemptsString, 10)
+      : 0;
+
+    if (currentAttempts >= maxAttempts) {
+      await redisClient.del(pendingKey);
+      await redisClient.del(attemptsKey);
       return res.status(HttpStatus.BadRequest).json({
         status: "Bad request",
-        message: "OTP has expired, regenerate new token",
+        message: "Maximum OTP attempts exceeded. Please register again.",
         statusCode: HttpStatus.BadRequest,
       });
     }
 
-    if (user?.otp !== otp) {
+    if (userData.otp !== otp) {
+      await redisClient.incr(attemptsKey);
+      const ttl = await redisClient.ttl(pendingKey);
+      await redisClient.expire(attemptsKey, ttl);
+
       return res.status(HttpStatus.BadRequest).json({
         status: "Bad request",
         message: "OTP does not match",
@@ -58,24 +72,44 @@ const verifyOtp = async (
       });
     }
 
+    // OTP matched — before creating, ensure user does not already exist
+    const existing = await User.findOne({ email }).lean();
+    if (existing) {
+      // cleanup pending redis keys
+      await redisClient.del(pendingKey);
+      await redisClient.del(attemptsKey);
+      return res.status(HttpStatus.Conflict).json({
+        status: "Conflict",
+        message: "User already exists with this email.",
+        statusCode: HttpStatus.Conflict,
+      });
+    }
+
     const newUser = await User.create({
-      firstname: user.firstname,
-      lastname: user.lastname,
-      state: user.state,
-      email: user.email,
-      password: user.password,
-      address: "",
+      firstname: userData.firstname,
+      lastname: userData.lastname,
+      state: userData.state,
+      email: userData.email,
+      password: userData.password,
     });
 
-    // await redisClient.del(email);
-    cache.del(email);
-    // const roles = Object.values(newUser.roles) as number[];
+    await redisClient.del(pendingKey);
+    await redisClient.del(attemptsKey);
+
     const accessToken = generateAccessToken(newUser._id, newUser.roles);
     const refreshToken = generateRefreshToken(newUser._id);
     newUser.refreshToken = refreshToken;
 
     await newUser.save();
-    await setTokens(res, accessToken, refreshToken, newUser._id);
+    await setTokens(res, refreshToken);
+    res.status(HttpStatus.Success).json({
+      status: "Success",
+      message: "email verified and user registered",
+      data: {
+        accessToken,
+        user: { userId: newUser._id },
+      },
+    });
   } catch (error) {
     return res.status(HttpStatus.ServerError).json({
       status: "Bad request",
