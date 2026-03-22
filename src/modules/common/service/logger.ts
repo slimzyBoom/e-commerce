@@ -1,14 +1,19 @@
-import winston from 'winston';
+import pino from "pino";
 
-export const logger = winston.createLogger({
-    level: 'error',
-    format: winston.format.combine(
-      winston.format.timestamp(),
-      winston.format.json()
-    ),
-    transports: [
-      new winston.transports.File({ filename: 'logs/error.log' }),
-      new winston.transports.Console()
-    ],
-  });
-  
+export const logger = pino({
+  redact: {
+    paths: ["req.headers.authorization", "req.headers.cookie"],
+  },
+  transport:
+    process.env.NODE_ENV !== "production"
+      ? {
+          target: "pino-pretty",
+          options: { colorize: true, translateTime: "SYS:standard" },
+        }
+      : {
+          target: "pino/file",
+          options: {
+            destination: "logs/app.log",
+          },
+        },
+});

@@ -1,11 +1,7 @@
-import "dotenv/config";
 import "express-async-errors";
 import "tsconfig-paths/register";
-import "express-session";
-import "./modules/common/config/passport2";
-import express, { Request, Response } from "express";
+import express from "express";
 import cors from "cors";
-import passport from "passport";
 import corsOptions from "./modules/common/config/corsOptions.config";
 import stateRoute from "./modules/states/routes/states.routes";
 import userRoute from "./modules/user/routes/user.route";
@@ -14,63 +10,32 @@ import productRoute from "./modules/product/routes/product.route";
 import authRoute from "./modules/auth/routes/auth.routes";
 import googleAuth from "./modules/auth/routes/google.routes";
 import cookieParser from "cookie-parser";
-import googleAuthSessionConfig from "./modules/common/config/googleSessionConfig";
-import otpSessionConfig from "./modules/common/config/otpSessionConfig";
 import cartRoute from "./modules/cart/routes/cart.route";
 import deliveryRoute from "./modules/delivery-add/deliveryAdd.route";
-
-import morgan from "morgan";
 import helmet from "helmet";
-import "./modules/common/config/db.config";
 import errorHandler from "./modules/common/middlewares/errorHandler";
-// import apiKeyMiddleware from "./modules/common/middlewares/apiKey";
 import path from "path";
-
-const PORT = process.env.PORT || 3000;
+import { logger } from "@common/service/logger";
+import pinoHttp from "pino-http";
+import { v4 as uuidv4 } from "uuid";
 
 const app = express();
+
+app.use(
+  pinoHttp({
+    logger,
+    genReqId: (req) => {
+      return req.headers["x-request-id"] || uuidv4();
+    },
+  }),
+);
 app.use(cookieParser());
 app.use(express.json());
 app.use(cors(corsOptions));
-
-if (process.env.NODE_ENV === "production") {
-  app.set("trust proxy", 1);
-}
-
-app.use(otpSessionConfig);
-app.use(googleAuthSessionConfig);
-
-app.use(passport.initialize());
-app.use(passport.session());
-
 app.use(helmet());
-(() => {
-  if (process.env.NODE_ENV === "test") return;
 
-  const morganMiddleware = (() => {
-    if (process.env.NODE_ENV === "development") {
-      return morgan("dev");
-    }
-
-    if (process.env.NODE_ENV === "production") {
-      return morgan("combined");
-    }
-
-    return null;
-  })();
-
-  if (morganMiddleware) {
-    app.use(morganMiddleware);
-  }
-})();
-
-morgan.token("error", (req: Request, res: Response) => {
-  const error = res.locals.error || "";
-  return error ? `Error: ${JSON.stringify(error)}` : "No error";
-});
-morgan.token("state", (req: Request, res: Response) => {
-  const error = res.locals.state || "";
-  return error ? `Error: ${JSON.stringify(error)}` : "No error";
+app.get("/", (req, res) => {
+  res.send("E-Commerce API is running...");
 });
 
 app.use("/auth/v1/google", googleAuth);
@@ -82,6 +47,7 @@ app.use("/cart/v1", cartRoute);
 app.use("/v1/products", productRoute);
 app.use("/v1/delivery", deliveryRoute);
 app.use("/api/v1/orders", orderRoute);
+
 app.all("*", (req, res) => {
   res.status(404);
   if (req.accepts("html")) {
@@ -94,6 +60,5 @@ app.all("*", (req, res) => {
 });
 
 app.use(errorHandler);
-app.listen(PORT, () => {
-  console.log(`Server is running on port....... ${PORT}`);
-});
+
+export default app;

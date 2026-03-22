@@ -8,13 +8,11 @@ import verifyUserAcces from "../../common/middlewares/verifyaccess";
 import verifyResetOtp from "../../auth/controllers/verifyResetOtp";
 import resetPassword from "../../auth/controllers/resetPswd";
 import requestPasswordReset from "../../auth/controllers/reqResetPswd";
-import otpSessionConfig from "../../common/config/otpSessionConfig";
-import { otpRateLimiter } from "../../auth/utils/limiter";
+import { otpRateLimiter } from "../utils/limiter";
 import newRegistrationOtp from "../../auth/controllers/sendNewregOtp";
 
 
 const router = Router();
-router.use(otpSessionConfig);
 
 router.post("/register", registerUser);
 router.post("/verify-otp", verifyOtp);

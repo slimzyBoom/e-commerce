@@ -36,9 +36,12 @@ const sendOTPEmail = async (email: string, token: string, message:string) => {
       html: htmlTemplate,
     };
 
-    await transporter.sendMail(mailOptions);
+    const emailResponse = await transporter.sendMail(mailOptions);
 
-    return "Email Sent Successfully";
+    if(!emailResponse.accepted.length && !emailResponse.accepted.includes(email)) {
+      throw new Error("Email not sent");
+    }
+    return "Email sent successfully";
   } catch (error) {
     throw error;
   }

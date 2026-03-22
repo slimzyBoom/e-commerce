@@ -1,11 +1,12 @@
 import { Response, Request } from "express";
 import { HttpStatus } from "../../common/enums/StatusCodes";
-import { generateOtp } from "../utils/generateOtp2";
+import { generateOtp } from "../utils/generateOtp";
 import sendOTPEmail from "../../common/utils/sendEmail";
 import { OTP_STATIC_VALUE } from "../../auth/static/otp.static";
 // import redisClient from "../../common/config/redisClient";
 
 import NodeCache from "node-cache";
+import { redisClient } from "../../common/config/redisClient"
 
 const cache = new NodeCache({ stdTTL: 0 });
 
@@ -26,45 +27,38 @@ const newRegistrationOtp = async (
       });
     }
 
-    // const userData = await redisClient.get(email);
-    const userData = cache.get(email);
-
-    if (!userData) {
+    const userData = await redisClient.hGetAll(`pending_user:${email}`);
+    if (!userData || Object.keys(userData).length === 0) {
       return res.status(HttpStatus.BadRequest).json({
         status: "Bad request",
         message:
-          "No registration data found for this email. Please start the registration process.",
+          "No user pending registration with this email. Please register first.",
         statusCode: HttpStatus.BadRequest,
       });
     }
 
-    // const user = JSON.parse(userData);
-    const user = userData;
-
-    const otpExpiry = Date.now() + OTP_EXPIRY_TIME;
+    const otpExpiry = OTP_EXPIRY_TIME / 1000;
     const OTP = await generateOtp();
 
-    cache.set(
-      email,
-      OTP_EXPIRY_TIME / 1000,
-      JSON.stringify({
-        ...user,
-        otp: OTP,
-        expiresAt: otpExpiry,
-      })
-    );
+    // Update an existing pending user 
+    await redisClient.hSet(`pending_user:${email}`, {
+      otp: OTP,
+      createdAt: new Date().toISOString(),
+    });
+    await redisClient.expire(`pending_user:${email}`, otpExpiry);
 
-    const result = await sendOTPEmail(
-      email as string,
-      OTP,
-      "Your new one-time Email verification code is:"
-    );
+
+    // const result = await sendOTPEmail(
+    //   email as string,
+    //   OTP,
+    //   "Your new one-time Email verification code is:"
+    // );
 
     res.status(HttpStatus.Created).json({
       status: "success",
-      message: result,
-      otp: OTP, //remeber to hide on production
+      message: "OTP sent successfully",
     });
+
   } catch (error) {
     return res.status(HttpStatus.ServerError).json({
       status: "error",

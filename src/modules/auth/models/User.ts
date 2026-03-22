@@ -22,10 +22,10 @@ const userSchema = new Schema<IUser>({
   },
   googleId: {
     type: String,
-    required: function() {
-      return this.provider.includes('google');
+    required: function (this: IUser) {
+      return this.provider.includes("google");
     },
-    select: false,  
+    select: false,
   },
   roles: {
     Admin: { type: Number },
@@ -102,7 +102,5 @@ export const validateOtpInput = (data: { email: string; otp: string }) => {
 
   return schema.validate(data);
 };
-
-
 
 export const User = mongoose.model<IUser>("User", userSchema);
