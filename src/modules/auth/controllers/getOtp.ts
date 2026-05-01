@@ -2,52 +2,50 @@
 
 import { Request, Response } from "express";
 import { Token, validateEmail } from "../models/token";
-import sendOTPEmail from "../../common/utils/sendEmail";
+import { sendOTPEmail } from "../../common/utils/sendEmail";
 import { generateOtp } from "../utils/generateOtp";
 import { HttpStatus } from "../../common/enums/StatusCodes";
+import { checkUserExistingCache } from "@auth/utils/redisHandling";
+import { AppError } from "@common/errors/appErrors";
+import expressAsyncHandler from "express-async-handler";
 
-export const getOtp = async (
-  req: Request,
-  res: Response
-): Promise<Response | undefined> => {
-  try {
-    const { email } = req.query;
-    const { error } = validateEmail({ email: email as string });
+export const getOtpController = expressAsyncHandler(
+  async (req: Request, res: Response) => {
+    await getOtpService(req.body)
+
+    res.status(HttpStatus.Success).json({
+      status: "success",
+      message: "OTP sent successfully",
+      statusCode: "200",
+    });
+  },
+);
+
+export const getOtpService = async ({ email }: { email: string }) => {
+   const { error } = validateEmail(email);
     if (error) {
-      return res.status(HttpStatus.BadRequest).json({
-        status: "Bad request",
-        message: error?.message.replace(/\"/g, ""),
-        statusCode: "400",
-      });
+      throw new AppError("Bad Request", HttpStatus.BadRequest, error.details[0].message);
+    }
+    const normalizedEmail = email.trim().toLowerCase();
+    const existingCache = await checkUserExistingCache(normalizedEmail);
+    if (existingCache) {
+      throw new AppError(
+        "An OTP has already been sent to this email. Please verify the OTP or request for a new one.",
+        HttpStatus.Conflict,
+      );
     }
     const OTP = await generateOtp();
 
-    await Token.create({
-      email: email,
-      token: OTP,
-      purpose: "email_verification",
-    });
+    const result = await sendOTPEmail(
+      normalizedEmail,
+      OTP,
+      "Your one-time Email verification code is:",
+    );
 
-    await sendOTPEmail(email as string, OTP,  "Your one-time Email verification code is:");
-
-    return res.status(HttpStatus.Success).json({
-      status: "success",
-      message: "OTP sent successfully",
-      data: {
-        otp: OTP,
-      },
-      statusCode: "200",
-    });
-  } catch (error) {
-    return res
-      .status(HttpStatus.ServerError)
-      .json({
-        status: "Bad request",
-        message: "Internal server error",
-        error,
-        statusCode: "500",
-      });
-  }
-};
-
-export default getOtp;
+    if (!result) {
+      throw new AppError(
+        "Failed to send OTP email. Please try again later.",
+        HttpStatus.ServerError,
+      );
+    }
+}

@@ -1,5 +1,6 @@
 import { Router } from "express";
 import verifyUserAcces from "../../common/middlewares/verifyaccess";
+import { Roles } from "@common/enums/roles";
 
 const router = Router();
 import {
@@ -10,7 +11,7 @@ import {
 } from "../controllers/cartControllers";
 
 
-router.use(verifyUserAcces(["User", "Admin"]));
+router.use(verifyUserAcces([Roles.User]));
 router
   .route("/")
   .get(getProducts)

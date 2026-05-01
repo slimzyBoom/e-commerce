@@ -1,4 +1,3 @@
-import { Request } from 'express';
 import mongoose from "mongoose";
 import Joi from "joi";
 
@@ -27,11 +26,11 @@ const tokenSchema = new mongoose.Schema({
 });
  
 // Validate email before creating a new token
- const validateEmail = (email: { email: string})=>{
+ const validateEmail = (data: any)=>{
     const schema = Joi.object({
         email: Joi.string().email().required(),
     })
-    return schema.validate(email)
+    return schema.validate(data)
  }
  
 

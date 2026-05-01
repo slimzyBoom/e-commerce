@@ -2,9 +2,10 @@ import express from 'express';
 import { getOrderHistory, getOrderDetails, cancelOrder, getOrderStatusOptions } from '../controller/orderController';
 import verifyUserAcces from "../../common/middlewares/verifyaccess";
 import {createOrder} from "../controller/createOrder"
+import { Roles } from "@common/enums/roles"
 const router = express.Router();
 
-router.use(verifyUserAcces(["User", "Admin"]));
+router.use(verifyUserAcces([Roles.User, Roles.Admin]));
 
 router.get('/history',  getOrderHistory);
 router.post('/create-order', createOrder)

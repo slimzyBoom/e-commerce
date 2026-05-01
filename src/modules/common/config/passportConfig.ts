@@ -2,8 +2,8 @@
 import passport from "passport";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import { User } from "../../auth/models/User";
-import { generateRefreshToken } from "../utils/genRefreshToken";
-import { generateAccessToken } from "../utils/genAccessToken";
+import { generateRefreshToken } from "../../auth/utils/genRefreshToken";
+import { generateAccessToken } from "../../auth/utils/genAccessToken";
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID!;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET!;
@@ -49,8 +49,8 @@ passport.use(
       } catch (error) {
         done(error, false);
       }
-    }
-  )
+    },
+  ),
 );
 
 // Store ONLY user ID + access token

@@ -1,16 +1,7 @@
 import nodemailer from "nodemailer";
 
-const sendOTPEmail = async (email: string, token: string, message:string) => {
-  try {
-    let transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.SMTP_EMAIL,
-        pass: process.env.SMTP_PASSWORD,
-      },
-    });
-
-    const htmlTemplate = `
+const htmlOTPTemplate = (message: string, token: string) => {
+  return `
         <html>
         <body style="text-align: center; max-width:100%; font-family: Arial, sans-serif;">
     
@@ -28,23 +19,24 @@ const sendOTPEmail = async (email: string, token: string, message:string) => {
         </body>
     </html>    
         `;
-
-    const mailOptions = {
-      from: process.env.SMTP_EMAIL,
-      to: email,
-      subject: "Verify Your Email",
-      html: htmlTemplate,
-    };
-
-    const emailResponse = await transporter.sendMail(mailOptions);
-
-    if(!emailResponse.accepted.length && !emailResponse.accepted.includes(email)) {
-      throw new Error("Email not sent");
-    }
-    return "Email sent successfully";
-  } catch (error) {
-    throw error;
-  }
 };
 
-export default sendOTPEmail;
+export const sendOTPEmail = async (email: string, token: string, message: string): Promise<boolean> => {
+  let transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.SMTP_EMAIL,
+      pass: process.env.SMTP_PASSWORD,
+    },
+  });
+
+  const mailOptions = {
+    from: process.env.SMTP_EMAIL,
+    to: email,
+    subject: "Verify Your Email",
+    html: htmlOTPTemplate(message, token),
+  };
+
+  const emailResponse = await transporter.sendMail(mailOptions);
+  return emailResponse.accepted.includes(email);
+};

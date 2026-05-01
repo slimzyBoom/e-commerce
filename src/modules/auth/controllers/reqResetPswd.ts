@@ -2,53 +2,41 @@ import { Request, Response } from "express";
 import { User } from "../models/User";
 import { HttpStatus } from "../../common/enums/StatusCodes";
 import { generateOtp } from "../../auth/utils/generateOtp";
-import sendOTPEmail from "../../common/utils/sendEmail";
-import NodeCache from "node-cache";
-
-// import redisClient from "../../common/config/redisClient";
-
-import { OTP_STATIC_VALUE } from "../../auth/static/otp.static";
-
-const cache = new NodeCache({ stdTTL: 300 });
+import { sendOTPEmail } from "../../common/utils/sendEmail";
+import { AppError } from "@common/errors/appErrors";
+import { cacheOtp } from "@auth/utils/redisHandling";
+import { validateEmail } from "@auth/models/token";
 
 const requestPasswordReset = async (
   req: Request,
-  res: Response
+  res: Response,
 ): Promise<Response> => {
-  const { OTP_EXPIRY_TIME } = OTP_STATIC_VALUE;
-  const { email } = req.body;
+  const { error, value } = validateEmail(req.body)
+  if(error){
+    throw new AppError("Bad request", HttpStatus.BadRequest, error.details[0].message)
+  }
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email: value.email });
   if (!user) {
-    return res.status(HttpStatus.NotFound).json({
-      status: "Not Found",
-      message: "User with this email does not exist",
-    });
+    throw new AppError("Bad Request", HttpStatus.BadRequest, "User not found");
   }
 
   const resetOtp = await generateOtp();
 
-  const tokenData = {
-    otp: resetOtp,
-    expiresAt: Date.now() + OTP_EXPIRY_TIME,
-    isVerified: false,
-  };
+  await cacheOtp(value.email, resetOtp);
 
-  cache.set(email, OTP_EXPIRY_TIME / 1000, JSON.stringify(tokenData));
-
-  const message = `You requested a password reset. Your 6-digit token is:`;
-  try {
-    const result = await sendOTPEmail(email, resetOtp, message);
-    return res.status(HttpStatus.Success).json({
-      status: "Success",
-      message: result,
-    });
-  } catch (error) {
-    return res.status(HttpStatus.ServerError).json({
-      status: "Error",
-      message: "Failed to send email. Try again later.",
-    });
+  const message = "You requested a password reset. Your 6-digit token is:";
+  const result = await sendOTPEmail(value.email, resetOtp, message);
+  if (!result) {
+    throw new AppError(
+      "Failed to send OTP email. Please try again later.",
+      HttpStatus.ServerError,
+    );
   }
+  return res.status(HttpStatus.Success).json({
+    status: "Success",
+    message: "Password reset OTP sent to email",
+  });
 };
 
 export default requestPasswordReset;

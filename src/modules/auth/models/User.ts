@@ -59,17 +59,14 @@ export const validateRegisterInput = (data: any) => {
 };
 export const validatePasswordInput = (data: any) => {
   const schema = Joi.object({
+    email: Joi.string().email({ minDomainSegments: 2 }).required(),
     password: Joi.string()
       .pattern(new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d]{8,}$"))
       .required()
       .messages({
         "string.pattern.base":
           "Password must contain at least 1 uppercase letter, 1 lowercase letter, 1 digit, and be at least 8 characters long",
-      }),
-    // confirmPassword: Joi.string()
-    //   .valid(Joi.ref("password"))
-    //   .required()
-    //   .messages({ "any.only": "Passwords do not match" }),
+      })
   });
 
   return schema.validate(data);
@@ -102,5 +99,26 @@ export const validateOtpInput = (data: { email: string; otp: string }) => {
 
   return schema.validate(data);
 };
+
+export const validatePasswordMatchInput = (data : { oldPassword: string, newPassword: string }) => {
+  const schema = Joi.object({
+    oldPassword: Joi.string()
+      .pattern(new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d]{8,}$"))
+      .required()
+      .messages({
+        "string.pattern.base":
+          "Password must contain at least 1 uppercase letter, 1 lowercase letter, 1 digit, and be at least 8 characters long",
+      }),
+      newPassword: Joi.string()
+      .pattern(new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d]{8,}$"))
+      .required()
+      .messages({
+        "string.pattern.base":
+          "Password must contain at least 1 uppercase letter, 1 lowercase letter, 1 digit, and be at least 8 characters long",
+      })
+  })
+
+  return schema.validate(data);
+}
 
 export const User = mongoose.model<IUser>("User", userSchema);

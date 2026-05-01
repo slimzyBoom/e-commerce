@@ -26,22 +26,27 @@ export interface IUser extends Document {
   expiresAt?: number | undefined;
 }
 
-declare module "express-serve-static-core" {
-  interface Request {
-    user?: {
-      id?: string;
-      googleId?: string;
-      firstname?: string;
-      lastname?: string;
-      email?: string;
-      phoneNumber?: string;
-      profilePicture?: string;
-      accessToken?: string;
-      roles?: number[];
-    };
+export interface IRequestUser { 
+  id: string;
+  roles: number[];
+}
+
+declare global {
+  namespace Express {
+    interface Request {
+      user?: IRequestUser;
+    }
   }
 }
 export interface SessionUser {
   id: Types.ObjectId;
   accessToken: string;
 }
+
+export interface IResponse {
+  success: Boolean;
+  message: string;
+  data?: object;
+  errors?: object | string;
+}
+
