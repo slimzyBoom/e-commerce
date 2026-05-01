@@ -1,8 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import { HttpStatus } from "../../common/enums/StatusCodes";
+import { Roles } from "@common/enums/roles";
 import verifyToken from "../../common/utils/verifyToken";
 
-const verifyUserAcces = (requiredRoles = ["User", "Admin"]) => {
+const verifyUserAcces = (requiredRoles = [Roles.User, Roles.Admin]) => {
   return async (
     req: Request,
     res: Response,
@@ -41,8 +42,8 @@ const verifyUserAcces = (requiredRoles = ["User", "Admin"]) => {
         .json({ message: "An unknown error occurred" });
     }
 
-    const userId = decodedToken?.userInfo?.id;
-    const roles = decodedToken?.userInfo?.roles || [];
+    const userId = decodedToken?.id;
+    const roles = decodedToken?.roles;
 
     if (!userId) {
       return res
@@ -60,9 +61,7 @@ const verifyUserAcces = (requiredRoles = ["User", "Admin"]) => {
 
     req.user = { id: userId, roles };
 
-    if (!res.headersSent) {
-      return next(); 
-    }
+   return next()
   };
 };
 

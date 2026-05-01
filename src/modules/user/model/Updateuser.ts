@@ -17,7 +17,11 @@ export const validateUpdateProfileInput = (data: Record<string, any>) => {
         "string.email": "Please enter a valid email address.",
       }),
     address: Joi.string().optional(),
-  });
+    gender: Joi.string().lowercase().valid("male", "female", "other").optional().messages({
+      "string.base": "Please enter a string",
+      "any.only": "Gender must be one of male, female or other"
+    })
+  }).min(1).unknown(false);
   
   return schema.validate(data);
 };

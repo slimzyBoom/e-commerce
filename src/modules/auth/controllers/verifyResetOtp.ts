@@ -1,61 +1,36 @@
 import { Request, Response } from "express";
 import { HttpStatus } from "../../common/enums/StatusCodes";
-// import redisClient from "../../common/config/redisClient";
+import { getOtpFromCache } from "@auth/utils/redisHandling";
 import { validateOtpInput } from "../models/User";
-import NodeCache from "node-cache";
+import { AppError } from "@common/errors/appErrors";
+import { logger } from "@common/service/logger"
+import { sanitizeEmail } from "@common/utils/sanitizeInput";
 
-const cache = new NodeCache({ stdTTL: 0 });
-
-const verifyResetOtp = async (
-  req: Request,
-  res: Response
-): Promise<Response> => {
+const verifyResetOtp = async (req: Request, res: Response) => {
   const { otp, email } = req.body;
   const { error } = validateOtpInput({ otp, email });
   if (error) {
-    return res.status(HttpStatus.BadRequest).json({
-      status: "Bad request",
-      message: error.details[0].message,
-      statusCode: HttpStatus.BadRequest,
-    });
+    throw new AppError(
+      "Bad Request",
+      HttpStatus.BadRequest,
+      error.details[0].message,
+    );
   }
 
-  // const userOtpData = await redisClient.get(email);
-  const userOtpData = cache.get<string>(email);
+  const otpFromCache = await getOtpFromCache(email);
 
-  if (!userOtpData) {
-    return res.status(HttpStatus.BadRequest).json({
-      status: "Bad Request",
-      message:
-        "OTP has not been generated or has expired. Please request a new OTP.",
-    });
+  if (!otpFromCache) {
+    logger.error({email : sanitizeEmail(email), action : "verify rest otp"}, "Error getting otp from cache")
+    throw new AppError("Bad Request", HttpStatus.BadRequest, "OTP not found.");
   }
 
-  const { otp: storedOtp, expiresAt, isVerified } = JSON.parse(userOtpData);
-  const currentTime = Date.now();
-
-  if (currentTime > expiresAt) {
-    cache.del(email);
-    return res.status(HttpStatus.BadRequest).json({
-      status: "Bad Request",
-      message: "OTP has expired. Please request a new one.",
-    });
+  if (otpFromCache !== otp) {
+    throw new AppError(
+      "Bad Request",
+      HttpStatus.BadRequest,
+      "OTP is incorrect. Please try again.",
+    );
   }
-
-  if (storedOtp !== otp) {
-    return res.status(HttpStatus.BadRequest).json({
-      status: "Bad Request",
-      message: "OTP is incorrect. Please try again.",
-    });
-  }
-
-  const updatedOtpData = {
-    otp: storedOtp,
-    expiresAt,
-    isVerified: true,
-  };
-
-  cache.set(email, JSON.stringify(updatedOtpData));
 
   return res.status(HttpStatus.Success).json({
     status: "Success",

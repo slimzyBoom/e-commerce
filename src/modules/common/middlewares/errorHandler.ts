@@ -1,16 +1,32 @@
-import { Response, Request, NextFunction } from "express";
-import { HttpStatus } from "../../common/enums/StatusCodes";
+import { NextFunction, Response, Request } from "express";
+import { AppError } from "../errors/appErrors"
+import { IResponse } from "modules/interfaces/User";
 
-const errorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
-    console.error(err.stack);
-    res.status(HttpStatus.ServerError).json({
-      status: "failed",
-      message: "Internal Server Error",
-      error: {
-        message: err.message,
-        ...(process.env.NODE_ENV === "development" && { stack: err.stack }) 
-      }
-    });
+export const errorHandler = (
+  err: unknown,
+  _req: Request,
+  res: Response,
+  _next: NextFunction
+) => {
+
+  const statusCode = err instanceof AppError ? err.statusCode : 500;
+  const message = err instanceof Error ? err.message : "Something went wrong";
+
+  const response: IResponse = {
+    success: false,
+    message: statusCode === 500 ? "Internal server error" : message,
   };
 
-  export default errorHandler;
+  // attach structured data if it exists
+  if (err instanceof AppError && err.details) {
+    if(typeof err.details === "object" && !Array.isArray(err.details)){
+      Object.assign(response, err.details);
+    }
+    else if (typeof err.details === "string"){
+      response.errors = err.details;
+    }
+  }
+
+  res.status(statusCode).json(response);
+};
+

@@ -2,11 +2,12 @@
 import { Router } from "express";
 import DeliveryAddressController from "./delivery.controller";
 import verifyUserAcces from "../common/middlewares/verifyaccess";
+import { Roles } from "@common/enums/roles";
 
 
 const router = Router();
 
-router.use(verifyUserAcces(["User", "Admin"]));
+router.use(verifyUserAcces([Roles.User, Roles.Admin]));
 router.post("/address", DeliveryAddressController.createAddress);
 
 router.get("/address", DeliveryAddressController.getUserAddresses);

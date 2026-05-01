@@ -13,7 +13,7 @@ import cookieParser from "cookie-parser";
 import cartRoute from "./modules/cart/routes/cart.route";
 import deliveryRoute from "./modules/delivery-add/deliveryAdd.route";
 import helmet from "helmet";
-import errorHandler from "./modules/common/middlewares/errorHandler";
+import { errorHandler } from "./modules/common/middlewares/errorHandler";
 import path from "path";
 import { logger } from "@common/service/logger";
 import pinoHttp from "pino-http";
@@ -25,7 +25,22 @@ app.use(
   pinoHttp({
     logger,
     genReqId: (req) => {
-      return req.headers["x-request-id"] || uuidv4();
+      const requestId = req.headers["x-request-id"];
+      return typeof requestId === "string" ? requestId : uuidv4();
+    },
+    serializers: {
+      req: (req) => {
+        return {
+          id: req.id,
+          method: req.method,
+          url: req.url,
+        };
+      },
+      res: (res) => {
+        return {
+          statusCode: res.statusCode,
+        }
+      }
     },
   }),
 );
