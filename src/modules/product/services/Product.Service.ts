@@ -1,93 +1,65 @@
-import Product from '../models/Product';
-import { IReview } from '../models/Product';
-
-// class ProductService {
-//   async createProduct(productData: any) {
-//     const product = new Product(productData);
-//     return await product.save();
-//   }
+import { ProductDto, Product, validateProduct } from "@product/models/Product";
+import { AppError } from "@common/errors/appErrors";
+import { HttpStatus } from "@common/enums/StatusCodes";
+import { Types } from "mongoose";
 
 
-//   async getAllProducts(filter: any, options: any) {
-//     try {
-  
-//         const products = await Product.find(filter) 
-//             .limit(options.limit)                   
-//             .skip(options.skip)                     
-//             .sort(options.sort);                   
+interface ProductFilter {
+  category?: string;
+  inStock?: boolean;
+  sort?: "price" | "rating" | "createdAt" |"-price" | "-rating" | "-createdAt";
+  search?: string;
 
-//         return products;
-//     } catch (error) {
-//        if(error instanceof Error){
-//         throw new Error(`Error fetching products: ${error.message}`);
-//        }
-//     }
-// }
+}
 
+export const createProductService = async (productData: ProductDto) => {
+  const { error } = validateProduct(productData);
+  if(error){
+    throw new AppError("Bad request", HttpStatus.BadRequest, error.details[0].message)
+  }
+  const product = await Product.create(productData);
 
-//   async getProductById(productId: string) {
-//     const product = await Product.findById(productId);
-//     if (!product) throw new Error('Product not found');
-//     return product;
-//   }
+  return product;
+}
 
-//   // Update a product
-//   async updateProduct(productId: string, updateData: any) {
- 
-//     if (updateData.reviews) {
-//         const product = await Product.findById(productId);
-//         if (!product) {
-//             throw new Error('Product not found');
-//         }
-//         updateData.reviews = [...product.reviews, ...updateData.reviews];
-//     }
-//     const updatedProduct = await Product.findByIdAndUpdate(productId, updateData, { new: true });
-//     return updatedProduct;
-// }
+export const updateProductService = async (productId: Types.ObjectId, updateData: Partial<ProductDto>) => {
+  const updatedProduct = await Product.findByIdAndUpdate(productId, updateData, { new: true });
+  if(!updatedProduct){
+    throw new AppError("Product not found", HttpStatus.NotFound)
+  }
+  return updatedProduct;
+}
 
-// async addReview(productId: string, reviewData: any) {
-//   const product = await Product.findById(productId);
-//   if (!product) throw new Error('Product not found');
+export const getAllProductsService = async (filterData: Partial<ProductFilter>) => {
+  let query : any = {};
+  if(filterData.category){
+    query.category = filterData.category;
+  }
+  if(filterData.inStock){
+    query.unit = { $gt: 0 };
+  }
+  if(filterData.search){
+    query.$or = [
+      { name: { $regex: filterData.search, $options: "i" }},
+      { description : { $regex: filterData.search, $options: "i" }}
+    ]
+  }
 
-//   product.reviews.push(reviewData); 
-//   product.ratings = this.calculateAverageRating(product.reviews);
+  const products = await Product.find(query).sort(filterData.sort || "-createdAt").limit(10).lean();
+  return products;
+}
 
-//   await product.save();
-//   return product;
-// }
-
-// async updateReview(productId: string, reviewId: string, reviewData: Partial<IReview>) {
-//   const product = await Product.findById(productId);
-//   if (!product) throw new Error('Product not found');
-
-//   // Manually find the review using the `_id` field
-//   const review = product.reviews.find((review) => review._id?.toString() === reviewId);
-//   if (!review) throw new Error('Review not found');
-
- 
-//   if (reviewData.rating) review.rating = reviewData.rating;
-//   if (reviewData.comment) review.comment = reviewData.comment;
-//   if (reviewData.name) review.name = reviewData.name;
-
-//   product.ratings = this.calculateAverageRating(product.reviews); 
-
-//   await product.save();
-//   return product;
-// }
-
-
-// calculateAverageRating(reviews: any[]) {
-//   if (reviews.length === 0) return 0;
-
-//   const totalRating = reviews.reduce((acc, review) => acc + review.rating, 0);
-//   return totalRating / reviews.length;
-// }
-//   // Delete a product
-//   async deleteProduct(productId: string) {
-//     const deletedProduct = await Product.findByIdAndDelete(productId);
-//     if (!deletedProduct) throw new Error('Product not found');
-//     return deletedProduct;
-//   }
-// }
-
-// export default new ProductService();
+export const getProductByIdService = async (productId: Types.ObjectId) => {
+  const product = await Product.findById(productId).lean();
+  if(!product){
+    throw new AppError("Product not found", HttpStatus.NotFound)
+  }
+  return product;
+}
+export const deleteProductService = async (productId: Types.ObjectId) => {
+  const product = await Product.findByIdAndDelete(productId);
+  if(!product){
+    throw new AppError("Product not found", HttpStatus.NotFound)
+  }
+  return product;
+}

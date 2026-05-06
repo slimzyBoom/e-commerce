@@ -1,13 +1,16 @@
 import { Router } from 'express';
-import ProductController from '../controller/Product';
-
+import { createProductController, updateProductController, getAllProductsController, getProductByIdController, deleteProductController } from '../controller/Product';
+import { Roles } from '@common/enums/roles';
+import verifyUserAcces from '@common/middlewares/verifyaccess';
 const router = Router();
 
 
-router.get('/', ProductController.getAllProducts);             
-router.get('/:id', ProductController.getProductById);           
-router.post('/', ProductController.createProduct);                
-router.put('/:id', ProductController.updateProduct);                // Update a product by ID
-router.delete('/:id', ProductController.deleteProduct);             // Delete a product by ID
+router.get('/', getAllProductsController);             
+router.get('/:id', getProductByIdController); 
+
+router.use(verifyUserAcces([Roles.Admin]))          
+router.post('/', createProductController);                
+router.put('/:id', updateProductController);                
+router.delete('/:id', deleteProductController);             
 
 export default router;
