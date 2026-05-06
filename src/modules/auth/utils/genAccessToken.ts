@@ -1,10 +1,6 @@
 import jwt from "jsonwebtoken";
+import { IRequestUser } from "modules/interfaces/User";
 import { Types } from "mongoose";
-
-export interface AccessTokenPayload {
-  id: Types.ObjectId;
-  roles: number[];
-}
 
 export const generateAccessToken = (
   userId: Types.ObjectId,
@@ -13,7 +9,7 @@ export const generateAccessToken = (
   const secret = process.env.ACCESS_TOKEN_SECRET as string;
 
   const roleArray = Object.values(roles).filter((role) : role is number => Boolean(role));
-  const tokenPayload: AccessTokenPayload = {
+  const tokenPayload: IRequestUser = {
     id: userId,
     roles: roleArray
   }

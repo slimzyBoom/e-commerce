@@ -2,6 +2,8 @@ import { Request, Response, NextFunction } from "express";
 import { HttpStatus } from "../../common/enums/StatusCodes";
 import { Roles } from "@common/enums/roles";
 import verifyToken from "../../common/utils/verifyToken";
+import { IRequestUser } from "modules/interfaces/User";
+import { AppError } from "@common/errors/appErrors";
 
 const verifyUserAcces = (requiredRoles = [Roles.User, Roles.Admin]) => {
   return async (
@@ -18,7 +20,7 @@ const verifyUserAcces = (requiredRoles = [Roles.User, Roles.Admin]) => {
     }
 
     const token = HEADER.split(" ")[1];
-    let decodedToken;
+    let decodedToken : IRequestUser;
 
     try {
       decodedToken = await verifyToken(token);

@@ -7,7 +7,6 @@ import { Roles } from "../../common/enums/roles";
 const router = Router();
 
 router.use(verifyUserAcces([Roles.User, Roles.Admin]));
-// verifyRoles(Roles.Admin)
 router.get("/profile", getUserProfile);
 router.patch("/profile", updateUserProfile);
 

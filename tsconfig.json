@@ -49,7 +49,7 @@
     "baseUrl": "./src",
     "paths": {
       "@auth/*": ["modules/auth/*"],
-      "@products/*": ["modules/products/*"],
+      "@product/*": ["modules/product/*"],
       "@common/*": ["modules/common/*"],
       "@states/*": ["modules/states/*"],
       "@user/*": ["modules/user/*"]

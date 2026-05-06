@@ -56,12 +56,12 @@ app.get("/", (req, res) => {
 app.use("/auth/v1/google", googleAuth);
 app.use("/auth/v1", authRoute);
 
-app.use("/api/v1", stateRoute);
-app.use("/user/v1", userRoute);
-app.use("/cart/v1", cartRoute);
-app.use("/v1/products", productRoute);
-app.use("/v1/delivery", deliveryRoute);
-app.use("/api/v1/orders", orderRoute);
+app.use("/api", stateRoute);
+app.use("/user", userRoute);
+app.use("/cart", cartRoute);
+app.use("/products", productRoute);
+app.use("/delivery", deliveryRoute);
+app.use("/orders", orderRoute);
 
 app.all("*", (req, res) => {
   res.status(404);

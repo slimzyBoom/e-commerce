@@ -27,7 +27,7 @@ export interface IUser extends Document {
 }
 
 export interface IRequestUser { 
-  id: string;
+  id: Types.ObjectId;
   roles: number[];
 }
 
