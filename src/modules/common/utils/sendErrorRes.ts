@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { HttpStatus } from '../../common/enums/StatusCodes';
+import { HttpStatus } from '../../common/enums/StatusCodes.js';
 
 
 

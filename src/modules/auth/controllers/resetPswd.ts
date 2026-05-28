@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
-import { User, validatePasswordInput } from "../models/User";
-import { hashPassword } from "../utils/hashPassword";
+import { User, validatePasswordInput } from "../models/User.js";
+import { hashPassword } from "../utils/hashPassword.js";
 
-import { HttpStatus } from "../../common/enums/StatusCodes";
-import { AppError } from "@common/errors/appErrors";
+import { HttpStatus } from "../../common/enums/StatusCodes.js";
+import { AppError } from "@common/errors/appErrors.js";
 
 const resetPassword = async (
   req: Request,

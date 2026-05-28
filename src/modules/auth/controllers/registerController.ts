@@ -1,8 +1,8 @@
 import asyncHandler from "express-async-handler";
 import { Request, Response } from "express";
-import { HttpStatus } from "../../common/enums/StatusCodes";
-import { registerUserService } from "@auth/services/register.service";
-import "../../interfaces/session";
+import { HttpStatus } from "../../common/enums/StatusCodes.js";
+import { registerUserService } from "@auth/services/register.service.js";
+import "../../interfaces/session.js";
 
 const registerUser = asyncHandler(
   async (req: Request, res: Response): Promise<void> => {

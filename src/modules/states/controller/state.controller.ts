@@ -1,43 +1,32 @@
+import { Request, Response } from "express";
+import {
+  getAllStateLGAService,
+  getAllStatesService,
+} from "@states/services/state.service.js";
+import expressAsyncHandler from "express-async-handler";
+import { HttpStatus } from "../../common/enums/StatusCodes.js";
+import { AppError } from "@common/errors/appErrors.js";
 
-import { Request, Response } from 'express';
-import { getAllStates, getStateById, getStateByName } from '../services/state.service';
-import { HttpStatus } from '../../common/enums/StatusCodes';
+export const getStatesController = expressAsyncHandler(
+  async (req: Request, res: Response) => {
+    const states = await getAllStatesService();
+    if (!states || states.length === 0) {
+      throw new AppError("No states found", HttpStatus.NotFound);
+    }
+    res.status(HttpStatus.Success).json({ success: true, data: states});
+  },
+);
 
-export const getStates = (req: Request, res: Response) => {
-  const states = getAllStates();
-  if (!states.length) {
-    return res.status(HttpStatus.BadRequest).json({ message: 'No states found' });
+export const getStateLGAController = expressAsyncHandler(
+  async (req: Request, res: Response) => {
+    const { stateIso } = req.params;
+    if(!stateIso) {
+      throw new AppError("State ISO code is required", HttpStatus.BadRequest);
+    }
+    const lgas = await getAllStateLGAService(stateIso);
+    if (!lgas || lgas.length === 0) {
+      throw new AppError("No LGAs found for the specified state", HttpStatus.NotFound);
+    }
+    res.status(HttpStatus.Success).json({ success: true, data: lgas });
   }
-  
-  res.json(states);
-};
-
-export const getState = (req: Request, res: Response) => {
-  const stateId = parseInt(req.params.id, 10);
-  const state = getStateById(stateId);
-  if (!state) {
-    return res.status(HttpStatus.BadRequest).json({ message: 'State not found' });
-  }
-  res.json({
-    "status": "success",
-    "data": state,
-    "message": "State found successfully"
-  });
-};
-
-export const getByName =  (req: Request, res: Response) => {
-  const stateName = req.params.name;
-
-
-  try {
-    const state = getStateByName(stateName);
-    res.json({
-      "status": "success",
-      "data": state,
-      "message": "State found successfully"
-    });
-  } catch (error) {
-    const errorMessage = (error as Error).message;
-    res.status(404).json({ message: errorMessage });
-  }
-};
+)

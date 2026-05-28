@@ -1,1 +1,0 @@
-const open_server = "server config file"

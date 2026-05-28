@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import expressAsyncHandler from 'express-async-handler';
-import { getAllProductReview, updateReview, deleteReview, addReview } from '../services/reviewService';
-import { AppError } from '@common/errors/appErrors';
-import { HttpStatus } from '@common/enums/StatusCodes';
+import { getAllProductReview, updateReview, deleteReview, addReview } from '../services/reviewService.js';
+import { AppError } from '@common/errors/appErrors.js';
+import { HttpStatus } from '@common/enums/StatusCodes.js';
 import { Types } from 'mongoose';
 
 export const getAllProductReviewController = expressAsyncHandler(

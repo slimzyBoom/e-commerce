@@ -1,11 +1,10 @@
 import { Router } from 'express';
-import { getStates, getState, getByName } from '../controller/state.controller';
+import { getStatesController, getStateLGAController } from '@states/controller/state.controller.js';
 
 const router = Router();
 
-// Get all states
-router.get('/states', getStates);
-router.get('/states/:id(\\d+)', getState);
-router.get('/states/:name([a-zA-Z]+)', getByName);
+router.get("/states/:stateIso/lgas", getStateLGAController);
+router.get('/states', getStatesController);
+
 
 export default router;

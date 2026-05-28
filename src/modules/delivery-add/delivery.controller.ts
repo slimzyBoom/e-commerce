@@ -1,10 +1,10 @@
 
 import { Request, Response } from 'express';
-import DeliveryAddressService from './DeliveryAddressService';
-import { validateAddress, validateAddUpdate } from './deliveryAddModel';
+import DeliveryAddressService from './DeliveryAddressService.js';
+import { validateAddress, validateAddUpdate } from './deliveryAddModel.js';
 import { Types } from 'mongoose';
-import { HttpStatus } from '../common/enums/StatusCodes';
-import sendErrorResponse from '../common/utils/sendErrorRes';
+import { HttpStatus } from '../common/enums/StatusCodes.js';
+import sendErrorResponse from '../common/utils/sendErrorRes.js';
 
 class DeliveryAddressController {
 

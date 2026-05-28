@@ -1,8 +1,8 @@
 
 import { Router } from "express";
-import DeliveryAddressController from "./delivery.controller";
-import verifyUserAcces from "../common/middlewares/verifyaccess";
-import { Roles } from "@common/enums/roles";
+import DeliveryAddressController from "./delivery.controller.js";
+import verifyUserAcces from "../common/middlewares/verifyaccess.js";
+import { Roles } from "@common/enums/roles.js";
 
 
 const router = Router();

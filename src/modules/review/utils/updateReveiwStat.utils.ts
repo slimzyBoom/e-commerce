@@ -1,5 +1,5 @@
-import { Review } from "../model/Review";
-import { Product } from "@product/models/Product";
+import { Review } from "../model/Review.js";
+import { Product } from "@product/models/Product.js";
 import { Types } from "mongoose";
 
 interface ReviewStats {

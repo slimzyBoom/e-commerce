@@ -1,13 +1,13 @@
-import { validateRegisterInput, User } from "@auth/models/User";
-import { hashPassword } from "@auth/utils/hashPassword";
-import { generateOtp } from "@auth/utils/generateOtp";
-import { sendOTPEmail } from "@common/utils/sendEmail";
-import { HttpStatus } from "@common/enums/StatusCodes";
-import { AppError } from "@common/errors/appErrors";
+import { validateRegisterInput, User } from "@auth/models/User.js";
+import { hashPassword } from "@auth/utils/hashPassword.js";
+import { generateOtp } from "@auth/utils/generateOtp.js";
+import { sendOTPEmail } from "@common/utils/sendEmail.js";
+import { HttpStatus } from "@common/enums/StatusCodes.js";
+import { AppError } from "@common/errors/appErrors.js";
 import {
   checkUserExistingCache,
   cacheUserData,
-} from "@auth/utils/redisHandling";
+} from "@auth/utils/redisHandling.js";
 
 interface IRegisterInput {
   firstname: string;

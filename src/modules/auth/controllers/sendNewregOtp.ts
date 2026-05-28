@@ -1,9 +1,7 @@
 import { Response, Request } from "express";
-import { HttpStatus } from "../../common/enums/StatusCodes";
-import { generateOtp } from "../utils/generateOtp";
-import { sendOTPEmail } from "../../common/utils/sendEmail";
+import { HttpStatus } from "../../common/enums/StatusCodes.js";
 import expressAsyncHandler from "express-async-handler";
-import { updateRegisterOtpService } from "@auth/services/sendNewRegOtp.service";
+import { updateRegisterOtpService } from "@auth/services/sendNewRegOtp.service.js";
 
 
 export const updateRegisterOtpController = expressAsyncHandler( async (req: Request, res: Response) => {

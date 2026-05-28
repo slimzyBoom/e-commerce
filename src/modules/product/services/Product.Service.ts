@@ -1,65 +1,152 @@
-import { ProductDto, Product, validateProduct } from "@product/models/Product";
-import { AppError } from "@common/errors/appErrors";
-import { HttpStatus } from "@common/enums/StatusCodes";
+import {
+  ProductDto,
+  Product,
+  validateCreateProduct,
+  validateProductFilter,
+} from "@product/models/Product.js";
+import { AppError } from "@common/errors/appErrors.js";
+import { HttpStatus } from "@common/enums/StatusCodes.js";
 import { Types } from "mongoose";
-
+import { uploadProductImages } from "@common/uploads/productUpload.js";
+import { Image } from "@auth/models/Image.js";
+import { UploadResult } from "@interfaces/Images.js";
+import mongoose from "mongoose";
+import { v2 as cloudinary } from "cloudinary";
 
 interface ProductFilter {
   category?: string;
-  inStock?: boolean;
-  sort?: "price" | "rating" | "createdAt" |"-price" | "-rating" | "-createdAt";
+  inStock?: string;
+  sort?: "price" | "rating" | "createdAt" | "-price" | "-rating" | "-createdAt";
   search?: string;
-
 }
 
-export const createProductService = async (productData: ProductDto) => {
-  const { error } = validateProduct(productData);
-  if(error){
-    throw new AppError("Bad request", HttpStatus.BadRequest, error.details[0].message)
+export const createProductService = async (
+  productData: ProductDto,
+  files: Express.Multer.File[],
+) => {
+  const { error } = validateCreateProduct(productData);
+  if (error) {
+    throw new AppError(error.details[0].message, HttpStatus.BadRequest);
   }
-  const product = await Product.create(productData);
+  const session = await mongoose.startSession();
 
-  return product;
-}
+  let uploadResults: UploadResult[] = [];
 
-export const updateProductService = async (productId: Types.ObjectId, updateData: Partial<ProductDto>) => {
-  const updatedProduct = await Product.findByIdAndUpdate(productId, updateData, { new: true });
-  if(!updatedProduct){
-    throw new AppError("Product not found", HttpStatus.NotFound)
+  try {
+    // Upload images first
+    uploadResults = await uploadProductImages(files);
+
+    let createdProduct;
+
+    await session.withTransaction(async () => {
+      // Create unsaved product instance
+      const product = new Product(productData);
+
+      // Create image documents
+      const imageDocs = await Promise.all(
+        uploadResults.map(async (image) => {
+          return await Image.create(
+            [
+              {
+                public_id: image.public_id,
+                secure_url: image.secure_url,
+                ownerType: "Product",
+                ownerId: product._id,
+              },
+            ],
+            { session },
+          );
+        }),
+      );
+
+      // Extract image ids
+      const imageIds = imageDocs.map((doc) => doc[0]._id);
+
+      // Attach image references
+      product.images = imageIds;
+
+      // Save product
+      createdProduct = await product.save({
+        session,
+      });
+    });
+
+    return createdProduct;
+  } catch (error) {
+    // Cleanup cloudinary uploads
+    await Promise.all(
+      uploadResults.map((image) =>
+        cloudinary.uploader.destroy(image.public_id),
+      ),
+    );
+
+    throw error;
+  } finally {
+    session.endSession();
+  }
+};
+
+export const updateProductService = async (
+  productId: Types.ObjectId,
+  updateData: Partial<ProductDto>,
+) => {
+  const updatedProduct = await Product.findByIdAndUpdate(
+    productId,
+    updateData,
+    { new: true },
+  );
+  if (!updatedProduct) {
+    throw new AppError("Product not found", HttpStatus.NotFound);
   }
   return updatedProduct;
-}
+};
 
-export const getAllProductsService = async (filterData: Partial<ProductFilter>) => {
-  let query : any = {};
-  if(filterData.category){
-    query.category = filterData.category;
+export const getAllProductsService = async (
+  filterData: Partial<ProductFilter>,
+) => {
+  const { error, value } = validateProductFilter(filterData);
+  if (error) {
+    throw new AppError(error.details[0].message, HttpStatus.BadRequest);
   }
-  if(filterData.inStock){
+  const query: any = {};
+  if(value.category){
+    query.category = value.category;
+  }
+  if (value.inStock) {
     query.unit = { $gt: 0 };
   }
-  if(filterData.search){
+  if (value.search) {
     query.$or = [
-      { name: { $regex: filterData.search, $options: "i" }},
-      { description : { $regex: filterData.search, $options: "i" }}
-    ]
+      { name: { $regex: value.search, $options: "i" } },
+      { description: { $regex: value.search, $options: "i" } },
+    ];
   }
-
-  const products = await Product.find(query).sort(filterData.sort || "-createdAt").limit(10).lean();
+  const products = await Product.find(query)
+    .sort(value.sort || "-createdAt")
+    .limit(10)
+    .lean();
+  if (products.length === 0) {
+    throw new AppError("No products found", HttpStatus.NotFound);
+  }
   return products;
-}
+};
 
 export const getProductByIdService = async (productId: Types.ObjectId) => {
   const product = await Product.findById(productId).lean();
-  if(!product){
-    throw new AppError("Product not found", HttpStatus.NotFound)
+  if (!product) {
+    throw new AppError("Product not found", HttpStatus.NotFound);
   }
   return product;
-}
+};
 export const deleteProductService = async (productId: Types.ObjectId) => {
   const product = await Product.findByIdAndDelete(productId);
-  if(!product){
-    throw new AppError("Product not found", HttpStatus.NotFound)
+  if (!product) {
+    throw new AppError("Product not found", HttpStatus.NotFound);
   }
   return product;
-}
+};
+
+export const getCategoriesService = async () => {
+  const categories = await Product.distinct("category");
+  return categories;
+};

@@ -1,5 +1,5 @@
-import { redisClient } from "@common/config/redisClient";
-import { OTP_STATIC_VALUE } from "@auth/static/otp.static";
+import { redisClient } from "@common/config/redisClient.js";
+import { OTP_STATIC_VALUE } from "@auth/static/otp.static.js";
 
 interface PendingUser {
   email: string;

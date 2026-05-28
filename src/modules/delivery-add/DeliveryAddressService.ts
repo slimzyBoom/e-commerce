@@ -1,5 +1,5 @@
 // services/DeliveryAddressService.ts
-import DeliveryAddress, { IDeliveryAdd } from './deliveryAddModel';
+import DeliveryAddress, { IDeliveryAdd } from './deliveryAddModel.js';
 import { Types } from 'mongoose';
 
 class DeliveryAddressService {

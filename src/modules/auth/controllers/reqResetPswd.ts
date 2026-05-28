@@ -1,11 +1,11 @@
 import { Request, Response } from "express";
-import { User } from "../models/User";
-import { HttpStatus } from "../../common/enums/StatusCodes";
-import { generateOtp } from "../../auth/utils/generateOtp";
-import { sendOTPEmail } from "../../common/utils/sendEmail";
-import { AppError } from "@common/errors/appErrors";
-import { cacheOtp } from "@auth/utils/redisHandling";
-import { validateEmail } from "@auth/models/token";
+import { User } from "../models/User.js";
+import { HttpStatus } from "../../common/enums/StatusCodes.js";
+import { generateOtp } from "../../auth/utils/generateOtp.js";
+import { sendOTPEmail } from "../../common/utils/sendEmail.js";
+import { AppError } from "@common/errors/appErrors.js";
+import { cacheOtp } from "@auth/utils/redisHandling.js";
+import { validateEmail } from "@auth/models/token.js";
 
 const requestPasswordReset = async (
   req: Request,

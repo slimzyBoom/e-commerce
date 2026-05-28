@@ -1,22 +1,21 @@
 import { Router } from "express";
-import verifyUserAcces from "../../common/middlewares/verifyaccess";
-import { Roles } from "@common/enums/roles";
+import verifyUserAcces from "../../common/middlewares/verifyaccess.js";
+import { Roles } from "@common/enums/roles.js";
 
 const router = Router();
 import {
-  getProducts,
-  addProduct,
-  updateProductQuantity,
-  deleteProduct,
-} from "../controllers/cartControllers";
+  getCartProducts,
+  addCartProduct,
+  updateCartProduct,
+  removeCartProduct,
+} from "../controllers/cartControllers.js";
 
-
-router.use(verifyUserAcces([Roles.User]));
+// router.use(verifyUserAcces([Roles.User]));
 router
   .route("/")
-  .get(getProducts)
-  .post(addProduct)
-  .put(updateProductQuantity)
-  .delete(deleteProduct);
+  .get(getCartProducts)
+  .post(addCartProduct)
+  .patch(updateCartProduct)
+  .delete(removeCartProduct);
 
 export default router;

@@ -1,9 +1,9 @@
-import { Product } from "@product/models/Product";
-import { Review, ReviewDto, validateReviewInput } from "../model/Review";
+import { Product } from "@product/models/Product.js";
+import { Review, ReviewDto, validateReviewInput } from "../model/Review.js";
 import { Types } from "mongoose";
-import { HttpStatus } from "@common/enums/StatusCodes";
-import { AppError } from "@common/errors/appErrors";
-import { calculateReviewStat } from "../utils/updateReveiwStat.utils";
+import { HttpStatus } from "@common/enums/StatusCodes.js";
+import { AppError } from "@common/errors/appErrors.js";
+import { calculateReviewStat } from "../utils/updateReveiwStat.utils.js";
 
 export const getAllProductReview = async (
   productId: Types.ObjectId,

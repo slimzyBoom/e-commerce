@@ -1,4 +1,4 @@
-import { HttpStatus } from "@common/enums/StatusCodes";
+import { HttpStatus } from "@common/enums/StatusCodes.js";
 export class AppError extends Error {
   public statusCode: number;
   public details?: unknown;     // extra payload (validation errors etc.)

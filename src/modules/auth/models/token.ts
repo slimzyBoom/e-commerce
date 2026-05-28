@@ -26,7 +26,7 @@ const tokenSchema = new mongoose.Schema({
 });
  
 // Validate email before creating a new token
- const validateEmail = (data: any)=>{
+ const validateEmail = (data: Record<string, any>)=>{
     const schema = Joi.object({
         email: Joi.string().email().required(),
     })

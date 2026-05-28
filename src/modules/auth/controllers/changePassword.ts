@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
-import { User, validatePasswordMatchInput } from "../models/User";
-import { HttpStatus } from "../../common/enums/StatusCodes";
-import { validatePassword } from "../../common/utils/validatePassword";
-import { hashPassword } from "../utils/hashPassword";
-import { AppError } from "@common/errors/appErrors"
+import { User, validatePasswordMatchInput } from "../models/User.js";
+import { HttpStatus } from "../../common/enums/StatusCodes.js";
+import { validatePassword } from "../../common/utils/validatePassword.js";
+import { hashPassword } from "../utils/hashPassword.js";
+import { AppError } from "@common/errors/appErrors.js"
 import expressAsyncHandler from "express-async-handler";
 
 

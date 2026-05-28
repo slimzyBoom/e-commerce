@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { IUser } from "../../interfaces/User";
+import { IUser } from "../../interfaces/User.js";
 import Joi from "joi";
 
 const userSchema = new Schema<IUser>({
@@ -8,10 +8,16 @@ const userSchema = new Schema<IUser>({
   lastname: { type: String, required: true },
   // state: { type: String, required: true },
   gender: { type: String, enum: ["male", "female"], required: false },
+  profile: {
+    type: {
+      public_id: { type: String, required: true, },
+      secure_url: { type: String, required: true },
+    }, 
+    required: false
+  },
   state: { type: String },
-  profilePicture: { type: String, required: false },
   email: { type: String, required: true, unique: true },
-  password: { type: String, required: false },
+  password: { type: String, required: false, select: false },
   isVerified: { type: Boolean, required: true, default: true },
   address: { type: String, required: false },
   phoneNumber: { type: String },
@@ -20,6 +26,7 @@ const userSchema = new Schema<IUser>({
     required: true,
     default: ["local"],
   },
+
   googleId: {
     type: String,
     required: function (this: IUser) {
@@ -31,12 +38,12 @@ const userSchema = new Schema<IUser>({
     Admin: { type: Number },
     User: { type: Number, default: 1000, required: true },
   },
-  refreshToken: { type: String },
+  refreshToken: { type: String, select: false },
 });
 
 // The Joi of validating client input
 
-export const validateRegisterInput = (data: any) => {
+export const validateRegisterInput = (data: Record<string, any>) => {
   const schema = Joi.object({
     firstname: Joi.string().min(2).trim().required(),
     lastname: Joi.string().min(2).trim().required(),
@@ -57,7 +64,7 @@ export const validateRegisterInput = (data: any) => {
 
   return schema.validate(data);
 };
-export const validatePasswordInput = (data: any) => {
+export const validatePasswordInput = (data: Record<string, any>) => {
   const schema = Joi.object({
     email: Joi.string().email({ minDomainSegments: 2 }).required(),
     password: Joi.string()
@@ -71,7 +78,7 @@ export const validatePasswordInput = (data: any) => {
 
   return schema.validate(data);
 };
-export const validateLoginInput = (data: any) => {
+export const validateLoginInput = (data: Record<string, any>) => {
   const schema = Joi.object({
     email: Joi.string().email({ minDomainSegments: 2 }),
     password: Joi.string()
@@ -85,7 +92,7 @@ export const validateLoginInput = (data: any) => {
   return schema.validate(data);
 };
 
-export const validateOtpInput = (data: { email: string; otp: string }) => {
+export const validateOtpInput = (data: Record<string, any>) => {
   const schema = Joi.object({
     email: Joi.string().email({ minDomainSegments: 2 }).required().messages({
       "string.email": "Email must be a valid email",
@@ -100,7 +107,7 @@ export const validateOtpInput = (data: { email: string; otp: string }) => {
   return schema.validate(data);
 };
 
-export const validatePasswordMatchInput = (data : { oldPassword: string, newPassword: string }) => {
+export const validatePasswordMatchInput = (data : Record<string, any>) => {
   const schema = Joi.object({
     oldPassword: Joi.string()
       .pattern(new RegExp("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[A-Za-z\\d]{8,}$"))

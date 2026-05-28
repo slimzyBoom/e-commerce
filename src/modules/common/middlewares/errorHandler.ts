@@ -1,6 +1,6 @@
 import { NextFunction, Response, Request } from "express";
-import { AppError } from "../errors/appErrors"
-import { IResponse } from "modules/interfaces/User";
+import { AppError } from "../errors/appErrors.js"
+import { IResponse } from "modules/interfaces/User.js";
 
 export const errorHandler = (
   err: unknown,

@@ -1,5 +1,5 @@
 import { createClient } from "redis";
-import { logger } from "../../common/service/logger";
+import { logger } from "../../common/service/logger.js";
 
 export const redisClient = createClient({
   username: process.env.REDIS_USERNAME as string,
