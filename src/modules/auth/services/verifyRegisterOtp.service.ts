@@ -13,6 +13,7 @@ import {
 import { User } from "@auth/models/User.js";
 import { logger } from "@common/service/logger.js"
 import { sanitizeEmail } from "@common/utils/sanitizeInput.js";
+import { mergeGuestCartIntoUserCart } from "modules/cart/utils/genOrMergeCart.js";
 
 interface IVerifyOtpInput {
   email: string;
@@ -23,7 +24,7 @@ const maxAttempts = process.env.OTP_ATTEMPTS
   ? parseInt(process.env.OTP_ATTEMPTS, 10)
   : 5;
 
-export const verifyRegisterOtpService = async (userInput: IVerifyOtpInput) => {
+export const verifyRegisterOtpService = async (userInput: IVerifyOtpInput, guestId: string) => {
   const { error } = validateOtpInput(userInput);
   if (error) {
     throw new AppError(
@@ -82,6 +83,8 @@ export const verifyRegisterOtpService = async (userInput: IVerifyOtpInput) => {
   });
 
   await deleteUserAndAttempts(email);
+
+  await mergeGuestCartIntoUserCart(guestId, newUser._id);
 
   const accessToken = generateAccessToken(newUser._id, newUser.roles);
   const refreshToken = generateRefreshToken(newUser._id);
