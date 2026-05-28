@@ -1,12 +1,12 @@
-import { generateOtp } from "@auth/utils/generateOtp";
+import { generateOtp } from "@auth/utils/generateOtp.js";
 import {
   checkUserExistingCache,
   updateUserCacheOtp,
-} from "@auth/utils/redisHandling";
-import { HttpStatus } from "@common/enums/StatusCodes";
-import { AppError } from "@common/errors/appErrors";
-import { sendOTPEmail } from "@common/utils/sendEmail";
-import { validateEmail } from "@auth/models/token";
+} from "@auth/utils/redisHandling.js";
+import { HttpStatus } from "@common/enums/StatusCodes.js";
+import { AppError } from "@common/errors/appErrors.js";
+import { sendOTPEmail } from "@common/utils/sendEmail.js";
+import { validateEmail } from "@auth/models/token.js";
 
 export const updateRegisterOtpService = async (input: { email: string }) => {
   const { error, value } = validateEmail(input);

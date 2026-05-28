@@ -1,93 +1,152 @@
-import Product from '../models/Product';
-import { IReview } from '../models/Product';
+import {
+  ProductDto,
+  Product,
+  validateCreateProduct,
+  validateProductFilter,
+} from "@product/models/Product.js";
+import { AppError } from "@common/errors/appErrors.js";
+import { HttpStatus } from "@common/enums/StatusCodes.js";
+import { Types } from "mongoose";
+import { uploadProductImages } from "@common/uploads/productUpload.js";
+import { Image } from "@auth/models/Image.js";
+import { UploadResult } from "@interfaces/Images.js";
+import mongoose from "mongoose";
+import { v2 as cloudinary } from "cloudinary";
 
-class ProductService {
-  async createProduct(productData: any) {
-    const product = new Product(productData);
-    return await product.save();
-  }
-
-
-  async getAllProducts(filter: any, options: any) {
-    try {
-  
-        const products = await Product.find(filter) 
-            .limit(options.limit)                   
-            .skip(options.skip)                     
-            .sort(options.sort);                   
-
-        return products;
-    } catch (error) {
-       if(error instanceof Error){
-        throw new Error(`Error fetching products: ${error.message}`);
-       }
-    }
+interface ProductFilter {
+  category?: string;
+  inStock?: string;
+  sort?: "price" | "rating" | "createdAt" | "-price" | "-rating" | "-createdAt";
+  search?: string;
 }
 
-
-  async getProductById(productId: string) {
-    const product = await Product.findById(productId);
-    if (!product) throw new Error('Product not found');
-    return product;
+export const createProductService = async (
+  productData: ProductDto,
+  files: Express.Multer.File[],
+) => {
+  const { error } = validateCreateProduct(productData);
+  if (error) {
+    throw new AppError(error.details[0].message, HttpStatus.BadRequest);
   }
+  const session = await mongoose.startSession();
 
-  // Update a product
-  async updateProduct(productId: string, updateData: any) {
- 
-    if (updateData.reviews) {
-        const product = await Product.findById(productId);
-        if (!product) {
-            throw new Error('Product not found');
-        }
-        updateData.reviews = [...product.reviews, ...updateData.reviews];
-    }
-    const updatedProduct = await Product.findByIdAndUpdate(productId, updateData, { new: true });
-    return updatedProduct;
-}
+  let uploadResults: UploadResult[] = [];
 
-async addReview(productId: string, reviewData: any) {
-  const product = await Product.findById(productId);
-  if (!product) throw new Error('Product not found');
+  try {
+    // Upload images first
+    uploadResults = await uploadProductImages(files);
 
-  product.reviews.push(reviewData); 
-  product.ratings = this.calculateAverageRating(product.reviews);
+    let createdProduct;
 
-  await product.save();
+    await session.withTransaction(async () => {
+      // Create unsaved product instance
+      const product = new Product(productData);
+
+      // Create image documents
+      const imageDocs = await Promise.all(
+        uploadResults.map(async (image) => {
+          return await Image.create(
+            [
+              {
+                public_id: image.public_id,
+                secure_url: image.secure_url,
+                ownerType: "Product",
+                ownerId: product._id,
+              },
+            ],
+            { session },
+          );
+        }),
+      );
+
+      // Extract image ids
+      const imageIds = imageDocs.map((doc) => doc[0]._id);
+
+      // Attach image references
+      product.images = imageIds;
+
+      // Save product
+      createdProduct = await product.save({
+        session,
+      });
+    });
+
+    return createdProduct;
+  } catch (error) {
+    // Cleanup cloudinary uploads
+    await Promise.all(
+      uploadResults.map((image) =>
+        cloudinary.uploader.destroy(image.public_id),
+      ),
+    );
+
+    throw error;
+  } finally {
+    session.endSession();
+  }
+};
+
+export const updateProductService = async (
+  productId: Types.ObjectId,
+  updateData: Partial<ProductDto>,
+) => {
+  const updatedProduct = await Product.findByIdAndUpdate(
+    productId,
+    updateData,
+    { new: true },
+  );
+  if (!updatedProduct) {
+    throw new AppError("Product not found", HttpStatus.NotFound);
+  }
+  return updatedProduct;
+};
+
+export const getAllProductsService = async (
+  filterData: Partial<ProductFilter>,
+) => {
+  const { error, value } = validateProductFilter(filterData);
+  if (error) {
+    throw new AppError(error.details[0].message, HttpStatus.BadRequest);
+  }
+  const query: any = {};
+  if(value.category){
+    query.category = value.category;
+  }
+  if (value.inStock) {
+    query.unit = { $gt: 0 };
+  }
+  if (value.search) {
+    query.$or = [
+      { name: { $regex: value.search, $options: "i" } },
+      { description: { $regex: value.search, $options: "i" } },
+    ];
+  }
+  const products = await Product.find(query)
+    .sort(value.sort || "-createdAt")
+    .limit(10)
+    .lean();
+  if (products.length === 0) {
+    throw new AppError("No products found", HttpStatus.NotFound);
+  }
+  return products;
+};
+
+export const getProductByIdService = async (productId: Types.ObjectId) => {
+  const product = await Product.findById(productId).lean();
+  if (!product) {
+    throw new AppError("Product not found", HttpStatus.NotFound);
+  }
   return product;
-}
-
-async updateReview(productId: string, reviewId: string, reviewData: Partial<IReview>) {
-  const product = await Product.findById(productId);
-  if (!product) throw new Error('Product not found');
-
-  // Manually find the review using the `_id` field
-  const review = product.reviews.find((review) => review._id?.toString() === reviewId);
-  if (!review) throw new Error('Review not found');
-
- 
-  if (reviewData.rating) review.rating = reviewData.rating;
-  if (reviewData.comment) review.comment = reviewData.comment;
-  if (reviewData.name) review.name = reviewData.name;
-
-  product.ratings = this.calculateAverageRating(product.reviews); 
-
-  await product.save();
-  return product;
-}
-
-
-calculateAverageRating(reviews: any[]) {
-  if (reviews.length === 0) return 0;
-
-  const totalRating = reviews.reduce((acc, review) => acc + review.rating, 0);
-  return totalRating / reviews.length;
-}
-  // Delete a product
-  async deleteProduct(productId: string) {
-    const deletedProduct = await Product.findByIdAndDelete(productId);
-    if (!deletedProduct) throw new Error('Product not found');
-    return deletedProduct;
+};
+export const deleteProductService = async (productId: Types.ObjectId) => {
+  const product = await Product.findByIdAndDelete(productId);
+  if (!product) {
+    throw new AppError("Product not found", HttpStatus.NotFound);
   }
-}
+  return product;
+};
 
-export default new ProductService();
+export const getCategoriesService = async () => {
+  const categories = await Product.distinct("category");
+  return categories;
+};

@@ -2,11 +2,14 @@
 import { Document, Types } from "mongoose";
 
 export interface IUser extends Document {
-  _id: Types.ObjectId;
   firstname: string;
   gender?: string;
   lastname: string;
   state?: string;
+  profile: {
+    public_id: string;
+    secure_url: string;
+  }
   email: string;
   password?: string;
   profilePicture: string | null;
@@ -22,19 +25,19 @@ export interface IUser extends Document {
     Admin?: number;
   };
   refreshToken: String;
-  otp?: string | null;
-  expiresAt?: number | undefined;
 }
 
 export interface IRequestUser { 
-  id: string;
+  id: Types.ObjectId;
   roles: number[];
 }
 
 declare global {
   namespace Express {
-    interface Request {
-      user?: IRequestUser;
+    interface User {
+      id: Types.ObjectId;
+      roles: number[] | { Admin?: number; User: number };
+      token?: string; // Optional, only for OAuth users
     }
   }
 }

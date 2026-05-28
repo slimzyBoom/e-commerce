@@ -1,62 +1,49 @@
-import mongoose from "mongoose";
+import mongoose, { Schema, HydratedDocument } from "mongoose";
 import Joi from "joi";
-import { ICart } from "../interfaces/cart";
+import { ICart, ICartItem, ICartDoc } from "../interfaces/cart.js";
 
-const cartSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
+const cartItemSchema = new Schema<ICartItem>(
+  {
+    product: { type: Schema.Types.ObjectId, ref: "Product", required: true },
+    quantity: { type: Number, required: true, default: 1 },
+    unit_price: { type: Number, required: true },
+    discount_price: { type: Number, default: 0 }
   },
-  items: [
-    {
-      productId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Product",
-      },
-      quantity: {
-        type: Number,
-        required: true,
-        min: 1,
-      },
-      size: {
-        type: String,
-        enum: ["xs", "sm", "md", "lg", "xl", "xxl"],
-        required: true,
-      },
-      price: {
-        type: Number,
-        required: true,
-      },
-      image: {
-        type: String,
-        required: true,
-      },
+  { _id: false },
+);
+
+const cartSchema = new mongoose.Schema<ICartDoc>(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
-  ],
-  totalAmount: {
-    type: Number || String,
-    required: true,
+    guestId: { type: String },
+    status: {
+      type: String,
+      enum: ["active", "checked_out", "expired"],
+      default: "active",
+    },
+    items: { type : [cartItemSchema], default : [] },
   },
-});
+  { timestamps: true },
+);
 
-
-
-// Joi validation schema for a cart
-const cartValidateShema = Joi.object({
-
-        productId: Joi.string().required(), // Mongoose ObjectId as a string
-        quantity: Joi.number().min(1).required(),
-        size: Joi.string()
-          .valid("xs", "sm", "md", "lg", "xl", "xxl")
-          .required(),
-        price: Joi.number().positive().required(),
-        image: Joi.string().uri().required(),
-});
-
-const Cart = mongoose.model<ICart>("Cart", cartSchema);
 export const validateCart = (data: Record<string, any>) => {
-  return cartValidateShema.validate(data);
+  const schema = Joi.object({
+  productId: Joi.string().required()
+});
+
+return schema.validate(data);
+};
+export const validateUpdateQueryCart = (data: Record<string, any>) => {
+  const schema = Joi.object({
+  increment: Joi.boolean().required()
+});
+
+return schema.validate(data);
 };
 
-export default Cart;
+
+export const Cart = mongoose.model<ICartDoc>("Cart", cartSchema);
+

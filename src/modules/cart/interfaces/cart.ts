@@ -1,17 +1,19 @@
 // src/interfaces/Cart.ts
-import { Document, Types } from "mongoose";
-import { ICartItem } from "./CartItem";
+import {  Types, HydratedDocument } from "mongoose";
 
-export interface ICart extends Document {
-  userId: Types.ObjectId;
+export interface ICart {
+  userId?: Types.ObjectId;
+  guestId?: string;
+  status: "active" | "checked_out" | "expired";
   items: ICartItem[];
-  totalAmount: number;
 }
 
-export interface LocalCartItem {
-    productId: string;
-    quantity: number;
-    size: "xs" | "sm" | "md" | "lg" | "xl" | "xxl";
-    price: number;
-    image: string;
-  }
+
+export interface ICartItem {
+  product: Types.ObjectId;
+  quantity: number;
+  unit_price: number;
+  discount_price: number;
+}
+
+export type ICartDoc = HydratedDocument<ICart>

@@ -1,5 +1,5 @@
   import { Request, Response } from 'express';
-  import { Order, cancelOrderSchema } from '../model/order';
+  import { Order, cancelOrderSchema } from '../model/order.js';
 
 
   export const getOrderHistory = async (req: Request, res: Response) => {

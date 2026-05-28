@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { logger } from "../service/logger";
+import { logger } from "../service/logger.js";
 
 mongoose.connection.on("connected", () => {
   logger.info({ message: "MongoDB connected successfully" });

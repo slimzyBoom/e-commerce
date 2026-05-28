@@ -1,18 +1,18 @@
-import { validateOtpInput } from "@auth/models/User";
-import { HttpStatus } from "@common/enums/StatusCodes";
-import { AppError } from "@common/errors/appErrors";
-import { generateAccessToken } from "@auth/utils/genAccessToken";
-import { generateRefreshToken } from "@auth/utils/genRefreshToken";
+import { validateOtpInput } from "@auth/models/User.js";
+import { HttpStatus } from "@common/enums/StatusCodes.js";
+import { AppError } from "@common/errors/appErrors.js";
+import { generateAccessToken } from "@auth/utils/genAccessToken.js";
+import { generateRefreshToken } from "@auth/utils/genRefreshToken.js";
 import {
   checkUserExistingCache,
   getAttempts,
   deleteUserAndAttempts,
   updateAttempts,
   getUserDataFromCache,
-} from "@auth/utils/redisHandling";
-import { User } from "@auth/models/User";
-import { logger } from "@common/service/logger"
-import { sanitizeEmail } from "@common/utils/sanitizeInput";
+} from "@auth/utils/redisHandling.js";
+import { User } from "@auth/models/User.js";
+import { logger } from "@common/service/logger.js"
+import { sanitizeEmail } from "@common/utils/sanitizeInput.js";
 
 interface IVerifyOtpInput {
   email: string;

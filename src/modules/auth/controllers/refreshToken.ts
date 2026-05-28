@@ -1,8 +1,8 @@
-import { User } from "../models/User";
+import { User } from "../models/User.js";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { Request, Response } from "express";
-import { HttpStatus } from "../../common/enums/StatusCodes";
-import { generateAccessToken } from "../utils/genAccessToken";
+import { HttpStatus } from "../../common/enums/StatusCodes.js";
+import { generateAccessToken } from "../utils/genAccessToken.js";
 
 export const refreshToken = async (
   req: Request,

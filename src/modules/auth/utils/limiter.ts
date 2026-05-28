@@ -1,4 +1,4 @@
-import { HttpStatus } from '../../common/enums/StatusCodes';
+import { HttpStatus } from '../../common/enums/StatusCodes.js';
 import rateLimit from 'express-rate-limit';
 
 export const otpRateLimiter = rateLimit({

@@ -1,8 +1,8 @@
 import expressAsyncHandler from "express-async-handler";
 import { Request, Response } from "express";
-import { HttpStatus } from "../../common/enums/StatusCodes";
-import { setTokens } from "../../auth/utils/tokenGenerator";
-import { loginUserService } from "@auth/services/login.service";
+import { HttpStatus } from "../../common/enums/StatusCodes.js";
+import { setTokens } from "../../auth/utils/tokenGenerator.js";
+import { loginUserService } from "@auth/services/login.service.js";
 
 const loginUser = expressAsyncHandler(
   async (req: Request, res: Response): Promise<void> => {

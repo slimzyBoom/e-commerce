@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import { HttpStatus } from "@common/enums/StatusCodes";
+import { HttpStatus } from "@common/enums/StatusCodes.js";
 import expressAsyncHandler from "express-async-handler";
-import { getAuthHealth } from "@auth/utils/authHealth";
+import { getAuthHealth } from "@auth/utils/authHealth.js";
 
 export const authHealthController = expressAsyncHandler(
   async (req: Request, res: Response): Promise<void> => {

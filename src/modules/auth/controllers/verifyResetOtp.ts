@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
-import { HttpStatus } from "../../common/enums/StatusCodes";
-import { getOtpFromCache } from "@auth/utils/redisHandling";
-import { validateOtpInput } from "../models/User";
-import { AppError } from "@common/errors/appErrors";
-import { logger } from "@common/service/logger"
-import { sanitizeEmail } from "@common/utils/sanitizeInput";
+import { HttpStatus } from "../../common/enums/StatusCodes.js";
+import { getOtpFromCache } from "@auth/utils/redisHandling.js";
+import { validateOtpInput } from "../models/User.js";
+import { AppError } from "@common/errors/appErrors.js";
+import { logger } from "@common/service/logger.js"
+import { sanitizeEmail } from "@common/utils/sanitizeInput.js";
 
 const verifyResetOtp = async (req: Request, res: Response) => {
   const { otp, email } = req.body;

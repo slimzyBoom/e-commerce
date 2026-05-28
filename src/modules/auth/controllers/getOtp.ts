@@ -1,12 +1,12 @@
 // src/modules/auth/controllers/auth.controller.ts
 
 import { Request, Response } from "express";
-import { Token, validateEmail } from "../models/token";
-import { sendOTPEmail } from "../../common/utils/sendEmail";
-import { generateOtp } from "../utils/generateOtp";
-import { HttpStatus } from "../../common/enums/StatusCodes";
-import { checkUserExistingCache } from "@auth/utils/redisHandling";
-import { AppError } from "@common/errors/appErrors";
+import { Token, validateEmail } from "../models/token.js";
+import { sendOTPEmail } from "../../common/utils/sendEmail.js";
+import { generateOtp } from "../utils/generateOtp.js";
+import { HttpStatus } from "../../common/enums/StatusCodes.js";
+import { checkUserExistingCache } from "@auth/utils/redisHandling.js";
+import { AppError } from "@common/errors/appErrors.js";
 import expressAsyncHandler from "express-async-handler";
 
 export const getOtpController = expressAsyncHandler(

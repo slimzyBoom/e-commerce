@@ -1,23 +1,28 @@
 import "express-async-errors";
-import "tsconfig-paths/register";
 import express from "express";
 import cors from "cors";
-import corsOptions from "./modules/common/config/corsOptions.config";
-import stateRoute from "./modules/states/routes/states.routes";
-import userRoute from "./modules/user/routes/user.route";
-import orderRoute from "./modules/orders/routes/order.route";
-import productRoute from "./modules/product/routes/product.route";
-import authRoute from "./modules/auth/routes/auth.routes";
-import googleAuth from "./modules/auth/routes/google.routes";
+import corsOptions from "./modules/common/config/corsOptions.config.js";
+import stateRoute from "./modules/states/routes/states.routes.js";
+import userRoute from "./modules/user/routes/user.route.js";
+import orderRoute from "./modules/orders/routes/order.route.js";
+import productRoute from "./modules/product/routes/product.route.js";
+import authRoute from "./modules/auth/routes/auth.routes.js";
+import googleAuth from "./modules/auth/routes/google.routes.js";
 import cookieParser from "cookie-parser";
-import cartRoute from "./modules/cart/routes/cart.route";
-import deliveryRoute from "./modules/delivery-add/deliveryAdd.route";
+import cartRoute from "./modules/cart/routes/cart.route.js";
+import deliveryRoute from "./modules/delivery-add/deliveryAdd.route.js";
+import seedProductRoute from "./modules/seed.js";
 import helmet from "helmet";
-import { errorHandler } from "./modules/common/middlewares/errorHandler";
+import { errorHandler } from "./modules/common/middlewares/errorHandler.js";
 import path from "path";
-import { logger } from "@common/service/logger";
-import pinoHttp from "pino-http";
+import { logger } from "@common/service/logger.js";
+import pinoHttpImport from "pino-http";
 import { v4 as uuidv4 } from "uuid";
+
+const pinoHttp =
+  typeof pinoHttpImport === "function"
+    ? pinoHttpImport
+    : pinoHttpImport.default;
 
 const app = express();
 
@@ -53,16 +58,16 @@ app.get("/", (req, res) => {
   res.send("E-Commerce API is running...");
 });
 
-app.use("/auth/v1/google", googleAuth);
-app.use("/auth/v1", authRoute);
+app.use("/auth/google", googleAuth);
+app.use("/auth", authRoute);
 
-app.use("/api/v1", stateRoute);
-app.use("/user/v1", userRoute);
-app.use("/cart/v1", cartRoute);
-app.use("/v1/products", productRoute);
-app.use("/v1/delivery", deliveryRoute);
-app.use("/api/v1/orders", orderRoute);
-
+app.use("/api", stateRoute);
+app.use("/user", userRoute);
+app.use("/cart", cartRoute);
+app.use("/products", productRoute);
+app.use("/delivery", deliveryRoute);
+app.use("/orders", orderRoute);
+app.use("/seed", seedProductRoute);
 app.all("*", (req, res) => {
   res.status(404);
   if (req.accepts("html")) {

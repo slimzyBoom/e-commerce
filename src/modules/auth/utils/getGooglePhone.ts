@@ -1,6 +1,6 @@
 import axios from "axios";
 
-async function getPhoneNumber(accessToken: string) {
+export async function getPhoneNumber(accessToken: string) {
   try {
     const response = await axios.get(
       "https://people.googleapis.com/v1/people/me?personFields=phoneNumbers",
@@ -18,7 +18,6 @@ async function getPhoneNumber(accessToken: string) {
     return ""; 
   } catch (error) {
     console.error("Error fetching phone number from Google People API:", error);
+    return "";
   }
 }
-
-export default getPhoneNumber;

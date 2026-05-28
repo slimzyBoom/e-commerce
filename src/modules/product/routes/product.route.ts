@@ -1,21 +1,18 @@
 import { Router } from 'express';
-import ProductController from '../controller/Product';
-import ReviewController from '../reviews/reviewController';
-
+import { createProductController, updateProductController, getAllProductsController, getProductByIdController, deleteProductController, getCategoriesController } from '../controller/productController.js';
+import { Roles } from '@common/enums/roles.js';
+import verifyUserAcces from '@common/middlewares/verifyaccess.js';
+import upload from '@common/config/multerConfig.js';
 const router = Router();
 
 
-router.get('/', ProductController.getAllProducts);             
-router.get('/:id', ProductController.getProductById);           
-router.post('/', ProductController.createProduct);                
-router.put('/:id', ProductController.updateProduct);                // Update a product by ID
-router.delete('/:id', ProductController.deleteProduct);             // Delete a product by ID
+router.get('/categories', getCategoriesController); 
+router.get('/', getAllProductsController);            
+router.get('/:id', getProductByIdController); 
 
-
-router.post('/:id/reviews', ReviewController.addReview);
-router.get('/:id/reviews', ReviewController.getAllReviewsForProduct);
-
-router.put('/:productId/reviews/:reviewId', ReviewController.updateReview);
-router.delete('/:productId/reviews/:reviewId', ReviewController.deleteReview); // Delete a review by review ID
+router.use(verifyUserAcces([Roles.Admin]))          
+router.post('/', upload.array("images", 5), createProductController);                
+router.put('/:id', updateProductController);                
+router.delete('/:id', deleteProductController);             
 
 export default router;

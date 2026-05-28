@@ -1,18 +1,13 @@
-import { User } from "../../auth/models/User";
-import { HttpStatus } from "../../common/enums/StatusCodes";
+import { User } from "../../auth/models/User.js";
+import { HttpStatus } from "../../common/enums/StatusCodes.js";
 import { Request, Response } from "express";
-import { AppError } from "@common/errors/appErrors";
-import { logger } from "@common/service/logger";
+import { AppError } from "@common/errors/appErrors.js";
 import expressAsyncHandler from "express-async-handler";
 
 export const getUserProfile = expressAsyncHandler(
   async (req: Request, res: Response) => {
-    if (!req.user || !req.user.id) {
-      logger.error("Unauthorized access to user profile");
-      throw new AppError("Unauthorized", HttpStatus.Unauthorized);
-    }
-
-    const userProfile = await User.findById(req.user.id).select(
+    const userId = req.user?.id;
+    const userProfile = await User.findById(userId).select(
       "-password -refreshToken -provider -_id -roles -provider -__v",
     );
     

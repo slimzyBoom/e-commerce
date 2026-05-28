@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import { HttpStatus } from "../../common/enums/StatusCodes";
-import { verifyRegisterOtpService } from "@auth/services/verifyRegisterOtp.service";
-import { setTokens } from "../../auth/utils/tokenGenerator";
+import { HttpStatus } from "../../common/enums/StatusCodes.js";
+import { verifyRegisterOtpService } from "@auth/services/verifyRegisterOtp.service.js";
+import { setTokens } from "../../auth/utils/tokenGenerator.js";
 import expressAsyncHandler from "express-async-handler";
 
 export const verifyOtp = expressAsyncHandler(async (req : Request, res : Response) => {
@@ -12,7 +12,7 @@ export const verifyOtp = expressAsyncHandler(async (req : Request, res : Respons
       message: "email verified and user registered",
       data: {
         accessToken,
-        user: { userId },
+        userId,
       },
     });
 })

@@ -1,6 +1,6 @@
 import mongoose from "mongoose"
 import axios from "axios"
-import { redisClient } from "@common/config/redisClient"
+import { redisClient } from "@common/config/redisClient.js"
 
 type HealthStatus = "ok" | "degraded" | "error"
 

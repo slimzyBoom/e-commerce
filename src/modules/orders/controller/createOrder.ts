@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
-import { Order, orderValidation } from '../model/order';
+import { Order, orderValidation } from '../model/order.js';
 import { randomUUID } from 'crypto';
-import { User } from '../../auth/models/User';
-import { HttpStatus } from '../../common/enums/StatusCodes';
+import { User } from '../../auth/models/User.js';
+import { HttpStatus } from '../../common/enums/StatusCodes.js';
 
 export const createOrder = async (req: Request, res: Response) => {
   try {   

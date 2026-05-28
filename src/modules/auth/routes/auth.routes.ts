@@ -1,17 +1,18 @@
 import { Router } from "express";
-import registerUser from "../controllers/registerController";
-import loginUser from "../controllers/loginController";
-import { verifyOtp } from "../controllers/verifyOtp";
-import { refreshToken } from "../controllers/refreshToken";
-import changePassword from "../controllers/changePassword";
-import verifyUserAcces from "../../common/middlewares/verifyaccess";
-import verifyResetOtp from "../../auth/controllers/verifyResetOtp";
-import resetPassword from "../../auth/controllers/resetPswd";
-import requestPasswordReset from "../../auth/controllers/reqResetPswd";
-import { otpRateLimiter } from "../utils/limiter";
-import { Roles } from "@common/enums/roles"
-import { updateRegisterOtpController } from "../../auth/controllers/sendNewregOtp";
-import { authHealthController } from "../controllers/authHealtController";
+import registerUser from "../controllers/registerController.js";
+import loginUser from "../controllers/loginController.js";
+import { verifyOtp } from "../controllers/verifyOtp.js";
+import { refreshToken } from "../controllers/refreshToken.js";
+import changePassword from "../controllers/changePassword.js";
+import verifyUserAcces from "../../common/middlewares/verifyaccess.js";
+import verifyResetOtp from "../../auth/controllers/verifyResetOtp.js";
+import resetPassword from "../../auth/controllers/resetPswd.js";
+import requestPasswordReset from "../../auth/controllers/reqResetPswd.js";
+import { otpRateLimiter } from "../utils/limiter.js";
+import { Roles } from "@common/enums/roles.js"
+import { updateRegisterOtpController } from "../../auth/controllers/sendNewregOtp.js";
+import { authHealthController } from "../controllers/authHealtController.js";
+
 
 const router = Router();
 
