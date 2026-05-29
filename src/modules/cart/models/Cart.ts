@@ -1,6 +1,6 @@
 import mongoose, { Schema, HydratedDocument } from "mongoose";
 import Joi from "joi";
-import { ICart, ICartItem, ICartDoc } from "../interfaces/cart.js";
+import { ICartItem, ICartDoc } from "../interfaces/cart.js";
 
 const cartItemSchema = new Schema<ICartItem>(
   {
