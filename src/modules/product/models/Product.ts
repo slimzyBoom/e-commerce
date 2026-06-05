@@ -12,6 +12,7 @@ interface Product {
   unit: number;
   avgRating: number;
   reviewCount: number;
+  // attributes: Map<string, any>;
 }
 export interface ProductDto {
   name: string;
@@ -33,9 +34,20 @@ const ProductSchema = new Schema<Product>(
     unit: { type: Number, required: true },
     avgRating: { type: Number, default: 0 },
     reviewCount: { type: Number, default: 0 },
+    // attributes: { type: Map, of: Schema.Types.Mixed }
   },
   { timestamps: true },
 );
+
+ProductSchema.index(
+  {
+    category: 1,
+    name: "text",
+    description: "text"
+  },
+  { name: "ProductCatalogIndex" }
+);
+// ProductSchema.index({ "attributes.$**" : 1 })
 
 export const validateCreateProduct = (product: Record<string, any>) => {
   const schema = Joi.object({
