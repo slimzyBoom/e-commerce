@@ -109,21 +109,28 @@ export const getAllProductsService = async (
     throw new AppError(error.details[0].message, HttpStatus.BadRequest);
   }
   const query: any = {};
-  if(value.category){
+  if (value.category) {
     query.category = value.category;
   }
   if (value.inStock) {
     query.unit = { $gt: 0 };
   }
   if (value.search) {
-    query.$or = [
-      { name: { $regex: value.search, $options: "i" } },
-      { description: { $regex: value.search, $options: "i" } },
-    ];
+    query.$text = { $search: value.search };
   }
+  // Add dynamic attribute filters
+  // if (value.attributes) {
+  //   for (const [key, val] of Object.entries(value.attributes)) {
+  //     // Dynamically build paths like: query["attributes.color"] = "Black"
+  //     query[`attributes.${key}`] = val;
+  //   }
+  // }
   const products = await Product.find(query)
     .sort(value.sort || "-createdAt")
     .limit(10)
+    .select(
+      "name description price discountPrice category images unit avgRating",
+    )
     .lean();
   if (products.length === 0) {
     throw new AppError("No products found", HttpStatus.NotFound);
