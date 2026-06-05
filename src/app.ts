@@ -4,7 +4,8 @@ import cors from "cors";
 import corsOptions from "./modules/common/config/corsOptions.config.js";
 import stateRoute from "./modules/states/routes/states.routes.js";
 import userRoute from "./modules/user/routes/user.route.js";
-import orderRoute from "./modules/orders/routes/order.route.js";
+// import orderRoute from "./modules/orders/routes/order.route.js";
+import ordersRoute from "modules/order/order.route.js"
 import productRoute from "./modules/product/routes/product.route.js";
 import authRoute from "./modules/auth/routes/auth.routes.js";
 import googleAuth from "./modules/auth/routes/google.routes.js";
@@ -66,7 +67,7 @@ app.use("/user", userRoute);
 app.use("/cart", cartRoute);
 app.use("/products", productRoute);
 app.use("/delivery", deliveryRoute);
-app.use("/orders", orderRoute);
+app.use("/orders", ordersRoute);
 app.use("/seed", seedProductRoute);
 app.all("*", (req, res) => {
   res.status(404);

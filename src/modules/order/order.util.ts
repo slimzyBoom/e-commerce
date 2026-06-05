@@ -17,9 +17,9 @@ export const validateCheckoutCart = async (
   const cartProducts = await Product.find({
     _id: { $in : productIds }
   })
-
+  const productsMap = new Map(cartProducts.map(products => [products._id.toString(), products]))
   for (const item of cart.items) {
-    const product = cartProducts.find((prod) => prod._id.toString() === item.product.toString())
+    const product = productsMap.get(item.product.toString())
 
     // Product deleted
     if (!product) {
@@ -76,6 +76,7 @@ export const calculateFees = (price: number) => {
   if(price >= shipping_threshold){
     shipping_fee = 0;
   }
+  shipping_fee = 5000; // Probably change later
   const tax_fee = roundToTwo(price * 0.05) // 5%
 
   return { shipping_fee, tax_fee }

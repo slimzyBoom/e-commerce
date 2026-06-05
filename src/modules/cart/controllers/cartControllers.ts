@@ -13,6 +13,8 @@ const getCartProducts = expressAsyncHandler(
   async (req: Request, res: Response) => {
     const userId = req.user?.id;
     const guestId = req.cookies?.guest_id;
+    console.log("User ID:", userId);
+    console.log("Guest ID:", guestId);
 
     if (!guestId && !userId) {
       logger.error("No active session id");
@@ -191,7 +193,7 @@ const removeCartProduct = expressAsyncHandler(
     const userId = req.user?.id;
     const guestId = req.cookies?.guest_id;
     if (!guestId && !userId) {
-      throw new AppError("Something went wrong", HttpStatus.ServerError);
+      throw new AppError("There is no active user or session", HttpStatus.Unauthorized);
     }
 
     const { productId } = req.body;
