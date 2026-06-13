@@ -8,6 +8,11 @@ const loginUser = expressAsyncHandler(
   async (req: Request, res: Response): Promise<void> => {
 
     const loginResult = await loginUserService(req.body);
+    res.clearCookie("guest_id", {
+      httpOnly: process.env.NODE_ENV === "production",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "none",
+    })
 
     await setTokens(res, loginResult.refreshToken);
 
