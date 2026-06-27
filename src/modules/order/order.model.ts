@@ -5,6 +5,7 @@ import {
   OrderStatus,
   PaymentStatus,
 } from "./order.interface.js";
+import Joi from "joi"
 
 const orderItemSchema = new Schema<IOrderItem>(
   {
@@ -20,6 +21,7 @@ const orderItemSchema = new Schema<IOrderItem>(
 const orderSchema = new Schema<IOrder>(
   {
     user_id: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    cart_id: { type: Schema.Types.ObjectId, ref: "Cart", required: true },
     order_number: { type: String, required: true },
     sub_total: { type: Number, required: true },
     total_amount: { type: Number, required: true },
@@ -54,3 +56,17 @@ const orderSchema = new Schema<IOrder>(
 );
 
 export const Order = mongoose.model<IOrder>("Order", orderSchema);
+
+export const validateShippingInfo = (data: Record<string, any>) => {
+  const schema = Joi.object({
+    full_name: Joi.string().required(),
+    email: Joi.string().email().required(),
+    phone_number: Joi.string().required(),
+    street_address: Joi.string().required(),
+    city: Joi.string().required(),
+    state: Joi.string().required(),
+    zip_code: Joi.number().integer().required(),
+  });
+
+  return schema.validate(data);
+};

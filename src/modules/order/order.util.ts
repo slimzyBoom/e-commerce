@@ -81,3 +81,8 @@ export const calculateFees = (price: number) => {
 
   return { shipping_fee, tax_fee }
 }
+
+export function convertNairaToKobo(amount: number): string {
+  const koboAmount = Math.round(amount * 100);
+  return String(koboAmount)
+}

@@ -17,3 +17,9 @@ export interface ICartItem {
 }
 
 export type ICartDoc = HydratedDocument<ICart>
+
+export enum CartStatus {
+  Active = "active",
+  CheckedOut = "checked_out",
+  Expired = "expired",
+}

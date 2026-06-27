@@ -67,7 +67,7 @@ app.use("/user", userRoute);
 app.use("/cart", cartRoute);
 app.use("/products", productRoute);
 app.use("/delivery", deliveryRoute);
-app.use("/orders", ordersRoute);
+app.use("/checkout", ordersRoute);
 app.use("/seed", seedProductRoute);
 app.all("*", (req, res) => {
   res.status(404);

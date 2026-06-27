@@ -15,7 +15,7 @@ export enum PaymentStatus {
     FAILED="failed"
 }
 
-interface ShippingInfo {
+export interface ShippingInfo {
     full_name : string;
     email: string;
     phone_number: string;
@@ -27,6 +27,7 @@ interface ShippingInfo {
 
 export interface IOrder {
     user_id: Types.ObjectId;
+    cart_id: Types.ObjectId;
     order_number: string;
     sub_total: number;
     currency: string;
