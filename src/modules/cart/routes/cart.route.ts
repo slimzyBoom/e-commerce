@@ -1,6 +1,5 @@
 import { Router } from "express";
-import verifyUserAcces from "../../common/middlewares/verifyaccess.js";
-import { Roles } from "@common/enums/roles.js";
+import { optionalVerifyAccess } from "@common/middlewares/optionalVerifyAccess.js";
 
 const router = Router();
 import {
@@ -10,7 +9,9 @@ import {
   removeCartProduct,
 } from "../controllers/cartControllers.js";
 
-// router.use(verifyUserAcces([Roles.User]));
+
+router.use(optionalVerifyAccess);
+
 router
   .route("/")
   .get(getCartProducts)
