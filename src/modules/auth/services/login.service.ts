@@ -4,8 +4,7 @@ import { validateLoginInput, User } from "@auth/models/User.js";
 import { validatePassword } from "@common/utils/validatePassword.js";
 import { generateAccessToken } from "@auth/utils/genAccessToken.js";
 import { generateRefreshToken } from "@auth/utils/genRefreshToken.js";
-import { Types } from "mongoose";
-
+import { mergeGuestCartIntoUserCart } from "modules/cart/utils/genOrMergeCart.js";
 interface ILoginInput {
   email: string;
   password: string;
@@ -18,6 +17,7 @@ interface ILoginResponse {
 
 export const loginUserService = async (
   input: ILoginInput,
+  guestId: string
 ): Promise<ILoginResponse> => {
   const { error } = validateLoginInput(input);
   if (error) {
@@ -56,6 +56,8 @@ export const loginUserService = async (
       "Password Incorrect",
     );
   }
+
+  await mergeGuestCartIntoUserCart(guestId, user._id)
 
   const accessToken = generateAccessToken(user._id, user.roles);
   const refreshToken = generateRefreshToken(user._id);

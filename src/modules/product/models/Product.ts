@@ -28,7 +28,7 @@ const ProductSchema = new Schema<Product>(
     description: { type: String, required: true },
     price: { type: Number, required: true },
     discountPercentage: { type: Number, default: 0 },
-    discountPrice: { type: Number, default: 0 },
+    discountPrice: { type: Number, default: null },
     category: { type: String, required: true },
     images: [{ type: Schema.Types.ObjectId, ref: "Image", required: true }],
     unit: { type: Number, required: true },

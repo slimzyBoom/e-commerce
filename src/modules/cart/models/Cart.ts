@@ -1,6 +1,7 @@
-import mongoose, { Schema, HydratedDocument } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import Joi from "joi";
-import { ICart, ICartItem, ICartDoc } from "../interfaces/cart.js";
+import { ICartItem, ICartDoc } from "../interfaces/cart.js";
+import { CartStatus } from "../interfaces/cart.js";
 
 const cartItemSchema = new Schema<ICartItem>(
   {
@@ -21,8 +22,8 @@ const cartSchema = new mongoose.Schema<ICartDoc>(
     guestId: { type: String },
     status: {
       type: String,
-      enum: ["active", "checked_out", "expired"],
-      default: "active",
+      enum: Object.values(CartStatus),
+      default: CartStatus.Active,
     },
     items: { type : [cartItemSchema], default : [] },
   },

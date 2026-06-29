@@ -6,8 +6,8 @@ import { loginUserService } from "@auth/services/login.service.js";
 
 const loginUser = expressAsyncHandler(
   async (req: Request, res: Response): Promise<void> => {
-
-    const loginResult = await loginUserService(req.body);
+    const guestId = req.cookies?.guest_id;
+    const loginResult = await loginUserService(req.body, guestId);
     res.clearCookie("guest_id", {
       httpOnly: process.env.NODE_ENV === "production",
       secure: process.env.NODE_ENV === "production",

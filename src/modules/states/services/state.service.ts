@@ -3,7 +3,13 @@ import { AppError } from "@common/errors/appErrors.js";
 import { HttpStatus } from "@common/enums/StatusCodes.js";
 const COUNTRY_API_KEY = process.env.COUNTRY_API_KEY as string;
 
-export const getAllStatesService = async () => {
+interface stateObject {
+  id: number;
+  name: string;
+  iso: string;
+}
+
+export const getAllStatesService = async (): Promise<stateObject[]> => {
   try {
     const response = await axios.get(
       "https://naija-places.toneflix.com.ng/api/v1/states",
