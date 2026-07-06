@@ -12,6 +12,7 @@ import { ShippingInfo, OrderStatus, PaymentStatus } from "./order.interface.js";
 import { Order, validateShippingInfo } from "./order.model.js";
 import { randomUUID } from "crypto";
 import axios from "axios";
+import mongoose from "mongoose";
 
 export const previewCartService = async (userId: Types.ObjectId) => {
   const cart = await Cart.findOne({ userId, status: CartStatus.Active }).lean();
@@ -44,8 +45,14 @@ export const initializeCheckoutService = async (
       error.details[0].message,
     );
   }
-  const orderDetails = await previewCartService(userId); // Valid cart items with it's details
-  const order = await Order.create({
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try{
+    const orderDetails = await previewCartService(userId); // Valid cart items with it's details
+  console.log(orderDetails);
+  const [order] = await Order.create([
+    {
     user_id: userId,
     cart_id: orderDetails.cartId,
     order_number: `ORD-${randomUUID()}`,
@@ -55,7 +62,8 @@ export const initializeCheckoutService = async (
     tax_fee: orderDetails.tax_fee,
     shipping_info: shippingInfoValid,
     items: orderDetails.items,
-  });
+  }
+  ], { session });
 
   const paystackPrivateKey = process.env.PAYSTACK_PRIVATE_KEY as string;
   const paystackUrl = "https://api.paystack.co/transaction/initialize";
@@ -90,9 +98,25 @@ export const initializeCheckoutService = async (
 
   order.payment_reference = reference;
   order.payment_provider = "paystack";
-  await order.save();
+  await order.save({ session });
 
+  await session.commitTransaction()
   return { authorization_url };
+  }catch(error){
+    await session.abortTransaction();
+
+    if(error instanceof AppError) throw error;
+
+    throw new AppError(
+      "Checkout initialization failed",
+      HttpStatus.ServerError,
+      error instanceof Error ? error.message : "Internal Server Error",
+    );
+  }finally {
+    await session.endSession();
+  }
+
+  
 };
 
 export const verifyCheckoutService = async (userId: Types.ObjectId, reference: string) => {
@@ -110,6 +134,7 @@ export const verifyCheckoutService = async (userId: Types.ObjectId, reference: s
       }
     }
   );
+  
   if(!response.data.status){
     throw new AppError("Payment verification failed", HttpStatus.ServerError, response.data.message);
   }

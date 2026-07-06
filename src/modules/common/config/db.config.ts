@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { logger } from "../service/logger.js";
 
+
 mongoose.connection.on("connected", () => {
   logger.info({ message: "MongoDB connected successfully" });
 });
@@ -19,7 +20,7 @@ mongoose.connection.on("error", (err) => {
 export const connectDB = async () => {
   try {
     await mongoose.connect(process.env.DB_URL as string, {
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 30000,
       maxPoolSize: 10,
       socketTimeoutMS: 45000,
       bufferCommands: false,
