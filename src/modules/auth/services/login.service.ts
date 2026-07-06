@@ -64,5 +64,6 @@ export const loginUserService = async (
   user.refreshToken = refreshToken;
 
   await user.save();
+
   return { accessToken, refreshToken };
 };

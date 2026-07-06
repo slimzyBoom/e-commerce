@@ -8,7 +8,7 @@ import { HttpStatus } from "@common/enums/StatusCodes.js";
 export const previewCartController = expressAsyncHandler( async (req: Request, res: Response ) => {
     const userId = req.user?.id;
     if(!userId){
-        throw new AppError("User unathorized", HttpStatus.Unauthorized)
+        throw new AppError("User unauthorized", HttpStatus.Unauthorized)
     }
     const cartPreview = await previewCartService(userId);
     res.json({ success: true, data: cartPreview })
@@ -16,12 +16,14 @@ export const previewCartController = expressAsyncHandler( async (req: Request, r
 
 export const initializeCheckoutController = expressAsyncHandler(
     async (req: Request, res: Response) => {
-        const userId = req.user?.id;
-        if (!userId) {
-            throw new AppError("User unathorized", HttpStatus.Unauthorized);
-        }
-        const checkoutDetails = await initializeCheckoutService(userId, req.body);
-        res.json({ success: true, data: checkoutDetails });
+        // const userId = req.user?.id;
+        // if (!userId) {
+        //     throw new AppError("User unauthorized", HttpStatus.Unauthorized);
+        // }
+        // // const checkoutDetails = await initializeCheckoutService(userId, req.body);
+        // // res.json({ success: true, data: checkoutDetails });
+        // res.json({ success: true, message: "Checkout initialized successfully" });
+        res.send("Hello I am working...")
     }
 )
 
@@ -30,7 +32,7 @@ export const verifyCheckoutController = expressAsyncHandler(
         const userId = req.user?.id;
         const { reference } = req.params;
         if(!userId){
-            throw new AppError("User unathorized", HttpStatus.Unauthorized)
+            throw new AppError("User unauthorized", HttpStatus.Unauthorized)
         }
         if(!reference){
             throw new AppError("Reference is required", HttpStatus.BadRequest)
