@@ -13,7 +13,6 @@ const loginUser = expressAsyncHandler(
       secure: process.env.NODE_ENV === "production",
       sameSite: "none",
     })
-
     await setTokens(res, loginResult.refreshToken);
 
     res.status(HttpStatus.Success).json({

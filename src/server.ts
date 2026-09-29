@@ -12,7 +12,7 @@ const PORT = process.env.PORT;
 connectDB();
 connectToRedis();
 
-app.use(passport.initialize());
+// app.use(passport.initialize());
 
 app.listen(PORT, () => {
   logger.info({

@@ -17,6 +17,8 @@ export const refreshToken = async (
   }
 
   const refreshToken = cookies.refreshToken;
+  console.log(req.headers.cookie);
+  console.log(req.cookies);
 
   jwt.verify(
     refreshToken,
@@ -46,13 +48,19 @@ export const refreshToken = async (
 
       const userId = (decoded as JwtPayload).id;
 
-      const foundUser = await User.findOne({ _id: userId }).exec();
+      const foundUser = await User.findOne({ _id: userId })
+        .select("+refreshToken")
+        .exec();
 
       if (!foundUser) {
         return res
           .status(HttpStatus.Unauthorized)
           .json({ message: "Unauthorized: User not found" });
       }
+
+      // console.log("Cookie:", refreshToken);
+      // console.log("Mongo :", foundUser.refreshToken);
+      // console.log("Equal :", refreshToken === foundUser.refreshToken);
 
       if (foundUser.refreshToken !== refreshToken) {
         return res

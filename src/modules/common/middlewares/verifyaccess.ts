@@ -25,6 +25,7 @@ const verifyUserAcces = (requiredRoles = [Roles.User, Roles.Admin]) => {
 
     try {
       decodedToken = await verifyToken(token);
+      console.log("Token vwerified...")
     } catch (error) {
       if (error instanceof Error) {
         if (error.name === "TokenExpiredError") {
